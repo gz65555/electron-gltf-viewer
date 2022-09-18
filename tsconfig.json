@@ -1,27 +1,27 @@
 {
   "compilerOptions": {
-		"baseUrl": ".",
+    "baseUrl": ".",
     "target": "ESNext",
     "useDefineForClassFields": true,
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-		"paths": {
-			"@/*": ["src/*"],
+    "paths": {
+      "@/*": ["src/*"],
       "styles/*": ["src/assets/styles/*"]
-		},
+    },
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",
+    "experimentalDecorators": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": ["src"],
+  "include": ["src", "electron-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
-
