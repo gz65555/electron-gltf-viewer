@@ -1,11 +1,11 @@
-import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
 import { release } from "os";
 import { join } from "path";
-import argv from "args-parser";
+import fs from "fs";
+// import argv from "args-parser";
 
-const args = argv(process.argv);
-const search = new URLSearchParams(args).toString();
-console.log(search);
+// const args = argv(process.argv);
+// const search = new URLSearchParams(args).toString();
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -30,6 +30,13 @@ const preload = join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = join(process.env.DIST, "index.html");
 
+let openedPath: string = null;
+app.on("will-finish-launching", () => {
+  app.on("open-file", (event, modelPath) => {
+    openedPath = modelPath;
+  });
+});
+
 async function createWindow() {
   win = new BrowserWindow({
     title: "GlTF Viewer",
@@ -42,10 +49,73 @@ async function createWindow() {
   });
 
   win.maximize();
+
+  const menu = Menu.buildFromTemplate([
+    {
+      label: "View",
+      submenu: [
+        {
+          label: "Exit",
+          click() {
+            app.quit();
+          },
+        },
+      ],
+    },
+    {
+      label: "File",
+      submenu: [
+        {
+          label: "Open File",
+          accelerator: "CmdOrCtrl+O",
+          // this is the main bit hijack the click event
+          click() {
+            // construct the select file dialog
+            dialog
+              .showOpenDialog({
+                properties: ["openFile"],
+                filters: [
+                  { name: "Models", extensions: ["gltf", "glb", "fbx"] },
+                ],
+              })
+              .then(function (fileObj) {
+                // the fileObj has two props
+                if (!fileObj.canceled) {
+                  // win.webContents.send("FILE_OPEN", fileObj.filePaths);
+                  const modelPath = fileObj.filePaths[0];
+                  fs.readFile(modelPath, (err, buffer) => {
+                    if (err) {
+                      console.log(err);
+                    } else {
+                      win.webContents.send("FILE_OPEN", buffer);
+                    }
+                  });
+                }
+              })
+              // should always handle the error yourself, later Electron release might crash if you don't
+              .catch(function (err) {
+                console.error(err);
+              });
+          },
+        },
+      ],
+    },
+  ]);
+
+  Menu.setApplicationMenu(menu);
+
   if (app.isPackaged) {
-    win.loadFile(indexHtml + "?" + search);
+    win.loadFile(indexHtml).then(() => {
+      fs.readFile(openedPath, (err, buffer) => {
+        if (err) {
+          console.log(err);
+        } else {
+          win.webContents.send("FILE_OPEN", buffer);
+        }
+      });
+    });
   } else {
-    win.loadURL(url + "?" + search);
+    win.loadURL(url);
     win.webContents.openDevTools();
   }
 

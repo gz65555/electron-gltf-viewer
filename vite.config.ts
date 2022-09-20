@@ -39,28 +39,7 @@ export default defineConfig({
             outDir: "dist/electron/main",
           },
           // Will start Electron via VSCode Debug
-          plugins: [
-            onstart(() => {
-              if (process.electronApp) {
-                process.electronApp.removeAllListeners();
-                process.electronApp.kill();
-              }
-
-              // Start Electron.app
-              process.electronApp = spawn(
-                // @ts-ignore
-                electronPath,
-                [
-                  ".",
-                  "--no-sandbox",
-                  "--gltf-url https://gw.alipayobjects.com/os/bmw-prod/0b0b0b3b-1b0c-4b0c-9b0c-1b0c0b0b0b0b.gltf",
-                ],
-                { stdio: "inherit" }
-              );
-              // Exit command after Electron.app exits
-              process.electronApp.once("exit", process.exit);
-            }),
-          ],
+          plugins: [process.env.VSCODE_DEBUG ? onstart() : null],
         },
       },
       preload: {

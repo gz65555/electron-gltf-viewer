@@ -40,6 +40,24 @@ import "./gltf-viewer.less";
 import { SimpleDropzone } from "simple-dropzone";
 import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
+import { ipcRenderer } from "electron";
+
+let buffer: ArrayBuffer = null;
+let oasis: Oasis = null;
+ipcRenderer.on("FILE_OPEN", (event, arg: Uint8Array) => {
+  console.log("FILE_OPEN", arg);
+  if (arg) {
+    console.log("receive buffer");
+    if (oasis) {
+      const url = URL.createObjectURL(new window.Blob([arg.buffer]));
+      oasis.loadModel(url, {}, "glb");
+    } else {
+      buffer = arg.buffer;
+    }
+  } else {
+    console.log("receive null");
+  }
+});
 
 const envList = {
   sunset:
@@ -99,6 +117,7 @@ class Oasis extends EventEmitter {
       this.initScene();
       this.initDropZone();
       this.initDefaultDebugMesh();
+      this.emit("ready");
     });
   }
 
@@ -374,12 +393,16 @@ class Oasis extends EventEmitter {
 }
 
 export function GlTFView() {
-  const oasisRef = useRef<Oasis>(null);
   const rootStore = useRootStore();
   useEffect(() => {
-    if (!oasisRef.current) {
-      const oasis = new Oasis();
-      oasisRef.current = oasis;
+    if (!oasis) {
+      oasis = new Oasis();
+      oasis.once("ready", () => {
+        if (buffer) {
+          const url = URL.createObjectURL(new window.Blob([buffer]));
+          oasis.loadModel(url, {}, "glb");
+        }
+      });
       oasis.on("loaded", (root: Entity) => {
         rootStore.initGlTF(root);
       });

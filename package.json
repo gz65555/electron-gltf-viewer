@@ -1,6 +1,6 @@
 {
   "name": "electron-vite-react",
-  "productName": "Electron",
+  "productName": "GlTF Viewer",
   "private": true,
   "version": "2.0.0",
   "description": "Vite React Electron boilerplate.",

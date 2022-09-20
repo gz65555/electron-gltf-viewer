@@ -3,9 +3,10 @@
  */
 {
   appId: "YourAppID",
-  productName: "YourAppName",
-  copyright: "Copyright © 2022 ${author}",
+  productName: "GlTF Viewer",
+  copyright: "Copyright © 2022 Gz65555",
   asar: true,
+  fileAssociations: [{ ext: "glb", role: "Editor" }],
   directories: {
     output: "release/${version}",
     buildResources: "electron/resources",
