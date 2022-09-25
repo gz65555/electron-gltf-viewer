@@ -1,11 +1,8 @@
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
 import { release } from "os";
-import { join } from "path";
+import path from "path";
 import fs from "fs";
-// import argv from "args-parser";
-
-// const args = argv(process.argv);
-// const search = new URLSearchParams(args).toString();
+import { createMenu } from "./menu";
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -19,28 +16,28 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-process.env.DIST = join(__dirname, "../..");
+process.env.DIST = path.join(__dirname, "../..");
 process.env.PUBLIC = app.isPackaged
   ? process.env.DIST
-  : join(process.env.DIST, "../public");
+  : path.join(process.env.DIST, "../public");
 
 let win: BrowserWindow | null = null;
 // Here, you can also use other preload
-const preload = join(__dirname, "../preload/index.js");
+const preload = path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
-const indexHtml = join(process.env.DIST, "index.html");
+const indexHtml = path.join(process.env.DIST, "index.html");
 
-let openedPath: string = null;
 app.on("will-finish-launching", () => {
   app.on("open-file", (event, modelPath) => {
-    openedPath = modelPath;
+    openFile(modelPath);
   });
 });
 
-async function createWindow() {
+let openedFile: string = null;
+async function createWindow(modelPath: string = null) {
   win = new BrowserWindow({
     title: "GlTF Viewer",
-    icon: join(process.env.PUBLIC, "favicon.svg"),
+    icon: path.join(process.env.PUBLIC, "favicon.svg"),
     webPreferences: {
       preload,
       nodeIntegration: true,
@@ -50,88 +47,36 @@ async function createWindow() {
 
   win.maximize();
 
-  const menu = Menu.buildFromTemplate([
-    {
-      label: "View",
-      submenu: [
-        {
-          label: "Exit",
-          click() {
-            app.quit();
-          },
-        },
-      ],
-    },
-    {
-      label: "File",
-      submenu: [
-        {
-          label: "Open File",
-          accelerator: "CmdOrCtrl+O",
-          // this is the main bit hijack the click event
-          click() {
-            // construct the select file dialog
-            dialog
-              .showOpenDialog({
-                properties: ["openFile"],
-                filters: [
-                  { name: "Models", extensions: ["gltf", "glb", "fbx"] },
-                ],
-              })
-              .then(function (fileObj) {
-                // the fileObj has two props
-                if (!fileObj.canceled) {
-                  // win.webContents.send("FILE_OPEN", fileObj.filePaths);
-                  const modelPath = fileObj.filePaths[0];
-                  fs.readFile(modelPath, (err, buffer) => {
-                    if (err) {
-                      console.log(err);
-                    } else {
-                      win.webContents.send("FILE_OPEN", buffer);
-                    }
-                  });
-                }
-              })
-              // should always handle the error yourself, later Electron release might crash if you don't
-              .catch(function (err) {
-                console.error(err);
-              });
-          },
-        },
-      ],
-    },
-  ]);
+  Menu.setApplicationMenu(createMenu());
 
-  Menu.setApplicationMenu(menu);
+  const bufferPromise = modelPath
+    ? readModelFile(modelPath)
+    : Promise.resolve();
+  ipcMain.once("init-file-fetch", async () => {
+    const buffer = await bufferPromise;
+    win.webContents.send("file-opened-once", buffer);
+  });
 
   if (app.isPackaged) {
-    win.loadFile(indexHtml).then(() => {
-      fs.readFile(openedPath, (err, buffer) => {
-        if (err) {
-          console.log(err);
-        } else {
-          win.webContents.send("FILE_OPEN", buffer);
-        }
-      });
-    });
+    win.loadFile(indexHtml);
   } else {
     win.loadURL(url);
     win.webContents.openDevTools();
   }
-
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on("did-finish-load", () => {
-    win?.webContents.send("main-process-message", new Date().toLocaleString());
-  });
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith("https:")) shell.openExternal(url);
     return { action: "deny" };
   });
+  win.setDocumentEdited(false);
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  if (BrowserWindow.getAllWindows().length <= 0) {
+    createWindow(openedFile);
+  }
+});
 
 app.on("window-all-closed", () => {
   win = null;
@@ -155,18 +100,28 @@ app.on("activate", () => {
   }
 });
 
-// new window example arg: new windows url
-ipcMain.handle("open-win", (event, arg) => {
-  const childWindow = new BrowserWindow({
-    webPreferences: {
-      preload,
-    },
-  });
-
-  if (app.isPackaged) {
-    childWindow.loadFile(indexHtml, { hash: arg });
+async function openFile(modelPath) {
+  app.addRecentDocument(modelPath);
+  if (win) {
+    const buffer = await readModelFile(modelPath);
+    win.webContents.send("file-opened", buffer);
   } else {
-    childWindow.loadURL(`${url}/#${arg}`);
-    // childWindow.webContents.openDevTools({ mode: "undocked", activate: true })
+    if (app.isReady()) {
+      createWindow(modelPath);
+    } else {
+      openedFile = modelPath;
+    }
   }
-});
+}
+
+function readModelFile(modelPath: string) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(modelPath, (err, buffer) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(buffer);
+      }
+    });
+  });
+}

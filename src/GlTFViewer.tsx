@@ -42,23 +42,6 @@ import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
 
-let buffer: ArrayBuffer = null;
-let oasis: Oasis = null;
-ipcRenderer.on("FILE_OPEN", (event, arg: Uint8Array) => {
-  console.log("FILE_OPEN", arg);
-  if (arg) {
-    console.log("receive buffer");
-    if (oasis) {
-      const url = URL.createObjectURL(new window.Blob([arg.buffer]));
-      oasis.loadModel(url, {}, "glb");
-    } else {
-      buffer = arg.buffer;
-    }
-  } else {
-    console.log("receive null");
-  }
-});
-
 const envList = {
   sunset:
     "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin",
@@ -252,7 +235,6 @@ class Oasis extends EventEmitter {
     });
 
     if (mainFile) {
-      this.dropStart();
       const url = URL.createObjectURL(mainFile);
       this.loadModel(url, filesMap, type as any);
     }
@@ -263,6 +245,7 @@ class Oasis extends EventEmitter {
     filesMap: Record<string, string>,
     type: "gltf" | "glb"
   ) {
+    this.dropStart();
     this.destroyGLTF();
 
     // replace relative path
@@ -392,19 +375,36 @@ class Oasis extends EventEmitter {
   }
 }
 
+let oasis: Oasis = null;
 export function GlTFView() {
   const rootStore = useRootStore();
   useEffect(() => {
     if (!oasis) {
       oasis = new Oasis();
-      oasis.once("ready", () => {
-        if (buffer) {
-          const url = URL.createObjectURL(new window.Blob([buffer]));
-          oasis.loadModel(url, {}, "glb");
+      function openFile(arg: Uint8Array) {
+        console.log("openFile", arg);
+        const blob = URL.createObjectURL(new Blob([arg.buffer]));
+        oasis.loadModel(blob, {}, "glb");
+      }
+      ipcRenderer.on("file-opened", (event, arg: Uint8Array) => {
+        openFile(arg);
+      });
+      ipcRenderer.on("file-opened-once", (event, arg: Uint8Array) => {
+        console.log("file-opened-once", arg);
+        if (arg) {
+          openFile(arg);
+        } else {
+          postMessage({ payload: "removeLoading" }, "*");
         }
       });
+      ipcRenderer.send("init-file-fetch");
       oasis.on("loaded", (root: Entity) => {
         rootStore.initGlTF(root);
+        postMessage({ payload: "removeLoading" }, "*");
+      });
+
+      ipcRenderer.on("mock", (event, arg) => {
+        console.log("get mock data", arg);
       });
     }
   }, []);

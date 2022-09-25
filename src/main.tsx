@@ -21,5 +21,3 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </RootContext.Provider>
   </React.StrictMode>
 );
-
-postMessage({ payload: "removeLoading" }, "*");
