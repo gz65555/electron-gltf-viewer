@@ -115,8 +115,8 @@ class Oasis extends EventEmitter {
           this.env[envName] = env;
 
           this.scene.ambientLight = env;
-          this.skyMaterial.textureCubeMap = env.specularTexture;
-          this.skyMaterial.textureDecodeRGBM = true;
+          // this.skyMaterial.textureCubeMap = env.specularTexture;
+          // this.skyMaterial.textureDecodeRGBM = true;
           resolve(true);
         })
         .catch((e) => {
@@ -131,7 +131,7 @@ class Oasis extends EventEmitter {
 
     // debug sync
     if (this.state.background) {
-      this.scene.background.mode = BackgroundMode.Sky;
+      // this.scene.background.mode = BackgroundMode.Sky;
     }
     if (!this.state.lights) {
       this.light1.enabled = this.light2.enabled = false;
@@ -140,14 +140,14 @@ class Oasis extends EventEmitter {
     this.light2.intensity = this.state.lightIntensity2;
     this.lightEntity1.transform.setRotation(-45, 0, 0);
     this.lightEntity2.transform.setRotation(-45, 180, 0);
-    this.scene.background.solidColor = new Color(0, 0, 0, 0);
-    this.scene.background.sky.material = this.skyMaterial;
-    this.scene.background.sky.mesh = PrimitiveMesh.createCuboid(
-      this.engine,
-      1,
-      1,
-      1
-    );
+    // this.scene.background.solidColor = new Color(0, 0, 0, 0);
+    // this.scene.background.sky.material = this.skyMaterial;
+    // this.scene.background.sky.mesh = PrimitiveMesh.createCuboid(
+    //   this.engine,
+    //   1,
+    //   1,
+    //   1
+    // );
     this.engine.run();
 
     window.onresize = () => {
