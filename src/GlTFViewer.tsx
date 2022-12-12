@@ -41,6 +41,7 @@ import { SimpleDropzone } from "simple-dropzone";
 import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
+import { IGlTF } from "./types/IGlTF";
 
 const envList = {
   sunset:
@@ -61,14 +62,14 @@ class Oasis extends EventEmitter {
 
   // Entity
   rootEntity: Entity = this.scene.createRootEntity("root");
-  cameraEntity: Entity = this.rootEntity.createChild("camera");
+  cameraEntity: Entity = this.rootEntity.createChild("scene-camera");
   gltfRootEntity: Entity = this.rootEntity.createChild("gltf");
   lightEntity1: Entity = this.rootEntity.createChild("light1");
   lightEntity2: Entity = this.rootEntity.createChild("light2");
 
   // Component
   camera: Camera = this.cameraEntity.addComponent(Camera);
-  controler: OrbitControl = this.cameraEntity.addComponent(OrbitControl);
+  controller: OrbitControl = this.cameraEntity.addComponent(OrbitControl);
   light1: DirectLight = this.lightEntity1.addComponent(DirectLight);
   light2: DirectLight = this.lightEntity2.addComponent(DirectLight);
 
@@ -92,6 +93,8 @@ class Oasis extends EventEmitter {
   $spinner = document.getElementById("spinner");
   $dropZone = document.getElementById("dropZone");
   $input = document.getElementById("input");
+
+  glTFData: any;
 
   constructor() {
     super();
@@ -127,7 +130,7 @@ class Oasis extends EventEmitter {
 
   initScene() {
     this.engine.canvas.resizeByClientSize();
-    this.controler.minDistance = 0;
+    this.controller.minDistance = 0;
 
     // debug sync
     if (this.state.background) {
@@ -140,14 +143,6 @@ class Oasis extends EventEmitter {
     this.light2.intensity = this.state.lightIntensity2;
     this.lightEntity1.transform.setRotation(-45, 0, 0);
     this.lightEntity2.transform.setRotation(-45, 180, 0);
-    // this.scene.background.solidColor = new Color(0, 0, 0, 0);
-    // this.scene.background.sky.material = this.skyMaterial;
-    // this.scene.background.sky.mesh = PrimitiveMesh.createCuboid(
-    //   this.engine,
-    //   1,
-    //   1,
-    //   1
-    // );
     this.engine.run();
 
     window.onresize = () => {
@@ -184,13 +179,13 @@ class Oasis extends EventEmitter {
     const size = extent.length();
 
     boundingBox.getCenter(center);
-    this.controler.target.set(center.x, center.y, center.z);
+    this.controller.target.set(center.x, center.y, center.z);
     this.cameraEntity.transform.setPosition(center.x, center.y, size * 3);
 
     this.camera.farClipPlane = size * 12;
     this.camera.nearClipPlane = size / 100;
 
-    this.controler.maxDistance = size * 10;
+    this.controller.maxDistance = size * 10;
   }
 
   initDropZone() {
@@ -235,15 +230,18 @@ class Oasis extends EventEmitter {
     });
 
     if (mainFile) {
-      const url = URL.createObjectURL(mainFile);
-      this.loadModel(url, filesMap, type as any);
+      mainFile.arrayBuffer().then((buffer) => {
+        const url = URL.createObjectURL(mainFile);
+        this.loadModel(url, filesMap, type as any, new Uint8Array(buffer));
+      });
     }
   }
 
   loadModel(
     url: string,
     filesMap: Record<string, string>,
-    type: "gltf" | "glb"
+    type: "gltf" | "glb",
+    buffer: Uint8Array
   ) {
     this.dropStart();
     this.destroyGLTF();
@@ -255,7 +253,8 @@ class Oasis extends EventEmitter {
           type: AssetType.JSON,
           url,
         })
-        .then((gltf: any) => {
+        .then((gltf: IGlTF) => {
+          // @ts-ignore
           gltf.buffers.concat(gltf.images).forEach((item) => {
             if (!item) return;
             let { uri } = item;
@@ -277,7 +276,7 @@ class Oasis extends EventEmitter {
               url: `${urlNew}#.gltf`,
             })
             .then((asset) => {
-              this.handleGlTFResource(asset);
+              this.handleGlTFResource(asset, buffer);
             })
             .catch(() => {
               this.dropError();
@@ -290,7 +289,7 @@ class Oasis extends EventEmitter {
           url: `${url}#.glb`,
         })
         .then((asset) => {
-          this.handleGlTFResource(asset);
+          this.handleGlTFResource(asset, buffer);
         })
         .catch(() => {
           this.dropError();
@@ -299,13 +298,13 @@ class Oasis extends EventEmitter {
   }
 
   /** 加载完毕 */
-  handleGlTFResource(asset: GLTFResource) {
+  handleGlTFResource(asset: GLTFResource, buffer: Uint8Array) {
     const { defaultSceneRoot, materials, animations } = asset;
     this.dropSuccess();
     this.gltfRootEntity = defaultSceneRoot;
     this.rootEntity.addChild(defaultSceneRoot);
 
-    this.emit("loaded", defaultSceneRoot);
+    this.emit("loaded", asset, buffer);
 
     const meshRenderers = [];
     defaultSceneRoot.getComponentsIncludeChildren(MeshRenderer, meshRenderers);
@@ -342,12 +341,13 @@ class Oasis extends EventEmitter {
       texture,
       DecodeMode.RGBE
     );
+
     const sh = new SphericalHarmonics3();
     SphericalHarmonics3Baker.fromTextureCubeMap(texture, DecodeMode.RGBE, sh);
     const arrayBuffer = toBuffer(bakedHDRCubeMap, sh);
     downloadArrayBuffer(arrayBuffer, name);
 
-    // update debuger
+    // update debugger
     const blob = new Blob([arrayBuffer], { type: "text/plain" });
     const bakeUrl = URL.createObjectURL(blob);
     this.state.env = name;
@@ -382,9 +382,8 @@ export function GlTFView() {
     if (!oasis) {
       oasis = new Oasis();
       function openFile(arg: Uint8Array) {
-        console.log("openFile", arg);
         const blob = URL.createObjectURL(new Blob([arg.buffer]));
-        oasis.loadModel(blob, {}, "glb");
+        oasis.loadModel(blob, {}, "glb", arg);
       }
       ipcRenderer.on("file-opened", (event, arg: Uint8Array) => {
         openFile(arg);
@@ -398,13 +397,9 @@ export function GlTFView() {
         }
       });
       ipcRenderer.send("init-file-fetch");
-      oasis.on("loaded", (root: Entity) => {
-        rootStore.initGlTF(root);
+      oasis.on("loaded", (asset: GLTFResource, buffer) => {
+        rootStore.initGlTF(asset, buffer);
         postMessage({ payload: "removeLoading" }, "*");
-      });
-
-      ipcRenderer.on("mock", (event, arg) => {
-        console.log("get mock data", arg);
       });
     }
   }, []);
@@ -413,7 +408,12 @@ export function GlTFView() {
       <div className="page-gltf-view">
         <canvas
           id="canvas-gltf-viewer"
-          style={{ width: "100%", height: "100%" }}
+          style={{
+            width: "100vw",
+            height: "100vh",
+            position: "fixed",
+            outline: "none",
+          }}
         />
         <div id="dropZone" className="dropZone">
           <img
@@ -421,7 +421,7 @@ export function GlTFView() {
             src="https://gw.alipayobjects.com/mdn/rms_7c464e/afts/img/A*-sHKTYv5U94AAAAAAAAAAAAAARQnAQ"
           />
           <input id="input" type="file" className="input" multiple />
-          <p>Drop your glTF2.0、images、HDRs here!</p>
+          <p>Drop your gltf, glb here!</p>
         </div>
         <div id="spinner" className="spinner hide" />
       </div>

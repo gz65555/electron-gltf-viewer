@@ -1,46 +1,26 @@
-import { useRootStore } from "@/store/RootStore";
-import {
-  DownOutlined,
-  FrownFilled,
-  FrownOutlined,
-  MehOutlined,
-  SmileOutlined,
-} from "@ant-design/icons";
-import { Tree } from "antd";
-import { observer } from "mobx-react-lite";
-import { useContext } from "react";
+import * as React from 'react';
+import TreeView from '@mui/lab/TreeView';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import TreeItem from '@mui/lab/TreeItem';
 
-const treeData = [
-  {
-    title: "scene",
-    key: "0-0",
-    children: [
-      {
-        title: "leaf",
-        key: "0-0-0",
-      },
-      {
-        title: "leaf",
-        key: "0-0-1",
-      },
-    ],
-  },
-];
-
-export const NodeTree = observer(() => {
-  const rootStore = useRootStore();
+export function NodeTree() {
   return (
-    <Tree
-      rootStyle={{ height: "100%", overflow: "scroll" }}
-      // style={{ height: "100%" }}
-      showIcon
-      defaultExpandAll
-      defaultSelectedKeys={["0-0-0"]}
-      switcherIcon={<DownOutlined />}
-      treeData={rootStore.treeData}
-      onSelect={(selectedKeys, info) => {
-        rootStore.select(selectedKeys[0] as number);
-      }}
-    />
+    <TreeView
+      aria-label="file system navigator"
+      defaultCollapseIcon={<ExpandMoreIcon />}
+      defaultExpandIcon={<ChevronRightIcon />}
+      sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
+    >
+      <TreeItem nodeId="1" label="Applications">
+        <TreeItem nodeId="2" label="Calendar" />
+      </TreeItem>
+      <TreeItem nodeId="5" label="Documents">
+        <TreeItem nodeId="10" label="OSS" />
+        <TreeItem nodeId="6" label="MUI">
+          <TreeItem nodeId="8" label="index.js" />
+        </TreeItem>
+      </TreeItem>
+    </TreeView>
   );
-});
+}
