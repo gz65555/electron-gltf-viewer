@@ -1,5 +1,6 @@
 import { styled } from "../theme/stitches.config";
 
+styled
 const StyledSidebar = styled("div", {
   width: 230,
   position: "absolute",

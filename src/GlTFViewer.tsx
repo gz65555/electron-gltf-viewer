@@ -33,7 +33,7 @@ import {
   Vector3,
   WebGLEngine,
 } from "oasis-engine";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 // import WrapperLayout from "../components/layout";
 import "./gltf-viewer.less";
 // @ts-ignore
@@ -42,6 +42,7 @@ import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
 import { IGlTF } from "./types/IGlTF";
+import { MaterialInspector } from "./components/leva/Material";
 
 const envList = {
   sunset:
@@ -378,9 +379,11 @@ class Oasis extends EventEmitter {
 let oasis: Oasis = null;
 export function GlTFView() {
   const rootStore = useRootStore();
+  const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!oasis) {
       oasis = new Oasis();
+      setReady(true);
       function openFile(arg: Uint8Array) {
         const blob = URL.createObjectURL(new Blob([arg.buffer]));
         oasis.loadModel(blob, {}, "glb", arg);
@@ -425,6 +428,11 @@ export function GlTFView() {
         </div>
         <div id="spinner" className="spinner hide" />
       </div>
+      {ready ? (
+        <MaterialInspector
+          material={new PBRMaterial(oasis.engine)}
+        ></MaterialInspector>
+      ) : null}
     </>
   );
 }
