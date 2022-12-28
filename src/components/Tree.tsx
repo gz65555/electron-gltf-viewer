@@ -111,7 +111,7 @@ export const Tree = observer(function () {
 
   return (
     <TreeView
-      selected={rootStore.selectedItemId}
+      selected={rootStore.selectedEntityId}
       onNodeSelect={(e, nodeId: string) => {
         console.log("selected", nodeId);
         rootStore.select(nodeId);

@@ -1,3 +1,4 @@
+import { InspectorType } from "@/store/enum";
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
 import { Material } from "oasis-engine";
@@ -21,22 +22,18 @@ function MaterialItem(props: {
 }
 
 export const MaterialListContainer = observer(function () {
+  const root = useRootStore();
   const {
     glTFResource: { materials },
-  } = useRootStore();
+  } = root;
 
-  const [selectedKey, setSelected] = React.useState(null);
   return (
     <>
       {materials.map((material, index) => (
         <MaterialItem
-          selected={selectedKey === index}
+          selected={index === root.selectedMaterialId}
           onClick={() => {
-            if (selectedKey === index) {
-              setSelected(null);
-            } else {
-              setSelected(index);
-            }
+            root.selectMaterial(index);
           }}
           key={material.instanceId}
           material={material}

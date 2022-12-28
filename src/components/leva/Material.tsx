@@ -29,16 +29,22 @@ export function transformValue(v: any) {
   return v;
 }
 
+const pbrRender = (get) => get("shader") === "pbr";
+
 const uniformMap = {
   u_baseColor: {
     label: "baseColor",
     defaultValue: { r: 1, g: 1, b: 1, a: 1 },
   },
-  u_tilingOffset: {
-    label: "tilingOffset",
-    defaultValue: { x: 1, y: 1, z: 0, w: 0 },
+  // u_tilingOffset: {
+  //   label: "tilingOffset",
+  //   defaultValue: { x: 1, y: 1, z: 0, w: 0 },
+  // },
+  u_normalIntensity: {
+    label: "normalIntensity",
+    defaultValue: 1,
+    render: pbrRender,
   },
-  u_normalIntensity: { label: "normalIntensity", defaultValue: 1 },
   u_emissiveColor: {
     label: "emissiveColor",
     defaultValue: { r: 0, g: 0, b: 0, a: 1 },
@@ -65,10 +71,11 @@ export function MaterialInspector(props: { material: BaseMaterial }) {
       };
     }
   });
+  console.log(material);
   const schema = {
     shader: {
       label: "shader",
-      value: "unlit",
+      value: material.shader.name,
       options: {
         pbr: "pbr",
         unlit: "unlit",

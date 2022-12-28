@@ -8,7 +8,14 @@ import {
   observable,
   toJS,
 } from "mobx";
-import { Camera, Entity, GLTFResource, Scene, WebGLEngine } from "oasis-engine";
+import {
+  Camera,
+  Entity,
+  GLTFResource,
+  Material,
+  Scene,
+  WebGLEngine,
+} from "oasis-engine";
 import { createContext, useContext } from "react";
 import { EntityStore } from "./EntityStore";
 import { validateBytes } from "gltf-validator";
@@ -21,10 +28,13 @@ export class RootStore {
   entities = new Map<string, Entity>();
 
   @observable
-  selectedItemId: string = "";
+  selectedEntityId: string = "";
 
   @observable
-  selectedType = "entity";
+  selectedMaterialId: number = -1;
+
+  @observable
+  inspectorType: InspectorType = InspectorType.Entity;
 
   @observable
   hasGlTF = false;
@@ -46,7 +56,10 @@ export class RootStore {
   glTFResource: GLTFResource;
 
   @observable
-  inspectorData: { type: InspectorType; data: Entity | Camera | Scene } = {
+  inspectorData: {
+    type: InspectorType;
+    data: Entity | Camera | Scene | Material;
+  } = {
     type: InspectorType.None,
     data: null,
   };
@@ -67,13 +80,13 @@ export class RootStore {
 
   constructor() {
     makeObservable(this);
-    window['root'] = this;
+    window["root"] = this;
   }
 
   @action
-  select(id: string, type = "entity") {
-    this.selectedItemId = id;
-    this.selectedType = type;
+  select(id: string, type = InspectorType.Entity) {
+    this.selectedEntityId = id;
+    this.inspectorType = type;
     this.entityStore.bindValue(this.selectedItem);
     if (id !== null) {
       this.toggleInspector(InspectorType.Entity, this.selectedItem);
@@ -81,18 +94,26 @@ export class RootStore {
   }
 
   @action
-  toggleInspector(type: InspectorType, data?: Entity) {
+  selectMaterial(id: number) {
+    this.selectedMaterialId = id;
+    this.toggleInspector(
+      InspectorType.Material,
+      this.glTFResource.materials[id]
+    );
+  }
+
+  @action
+  toggleInspector(type: InspectorType, data?: Entity | Material) {
     this.inspectorData.type = type;
-    if (type === InspectorType.Entity) {
-      this.inspectorData.data = data;
-    } else if (type === InspectorType.SceneCamera) {
+    this.inspectorData.data = data;
+    if (type === InspectorType.SceneCamera) {
       this.inspectorData.data = this.sceneCamera;
     }
   }
 
   @computed
   get selectedItem(): Entity | undefined {
-    return this.entities.get(this.selectedItemId);
+    return this.entities.get(this.selectedEntityId);
   }
 
   @action
@@ -138,7 +159,7 @@ export class RootStore {
 
   getExpands() {
     const expands: string[] = [];
-    const currentId = this.selectedItemId;
+    const currentId = this.selectedEntityId;
     let entity = this.entities.get(currentId);
     if (entity) {
       while (entity.parent) {

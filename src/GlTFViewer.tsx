@@ -106,6 +106,7 @@ class Oasis extends EventEmitter {
       this.initDefaultDebugMesh();
       this.emit("ready");
     });
+
   }
 
   loadEnv(envName: keyof typeof envList) {
@@ -428,11 +429,6 @@ export function GlTFView() {
         </div>
         <div id="spinner" className="spinner hide" />
       </div>
-      {ready ? (
-        <MaterialInspector
-          material={new PBRMaterial(oasis.engine)}
-        ></MaterialInspector>
-      ) : null}
     </>
   );
 }
