@@ -1,60 +1,42 @@
 import { useControls, Leva, folder } from "leva";
 import { Camera } from "oasis-engine";
-// import {} from "tweakpane";
+import { useEffect } from "react";
+import { Pane } from "tweakpane";
 
 export function CameraInspector(props: { camera: Camera }) {
   const { camera } = props;
-  useControls({
-    isOrtho: {
-      value: camera.isOrthographic,
-      onChange(v) {
-        camera.isOrthographic = v;
-      },
-    },
-    fieldOfView: {
-      value: camera.fieldOfView,
-      min: 0,
+
+  useEffect(() => {
+    const pane = new Pane();
+    pane.title = "Camera";
+    pane.addInput(camera, "isOrthographic", { label: "isOrtho" });
+    pane.addInput(camera, "nearClipPlane", {
+      label: "near",
+      min: 0.1,
+      step: 0.25,
+    });
+    pane.addInput(camera, "farClipPlane", { label: "far", step: 0.25 });
+    const fovInput = pane.addInput(camera, "fieldOfView", {
+      min: 0.1,
       max: 180,
       step: 1,
-      onChange: (v) => {
-        camera.fieldOfView = v;
-      },
-      render: (get) => get("isOrtho") === false,
-    },
-    orthoSize: {
-      value: camera.orthographicSize,
-      onChange(v) {
-        camera.orthographicSize = v;
-      },
-      render: (get) => get("isOrtho") === true,
-    },
-    near: {
-      value: camera.nearClipPlane,
-      step: 0.25,
-      onChange: (v) => {
-        camera.nearClipPlane = v;
-      },
-    },
-    far: {
-      value: camera.farClipPlane,
-      step: 0.25,
-      onChange: (v) => {
-        camera.farClipPlane = v;
-      },
-    },
-  });
-  return (
-    <Leva
-      titleBar={{
-        title: "Camera",
-        drag: false,
-        position: { x: 0, y: 0 },
-        filter: false,
-      }}
-      hidden={false}
-      flat={false}
-      fill={false}
-      hideCopyButton={true}
-    ></Leva>
-  );
+      label: "fov",
+    });
+    const orthoSizeInput = pane.addInput(camera, "orthographicSize", {
+      label: "orthoSize",
+    });
+
+    fovInput.hidden = camera.isOrthographic;
+    orthoSizeInput.hidden = !camera.isOrthographic;
+
+    pane.on("change", () => {
+      fovInput.hidden = camera.isOrthographic;
+      orthoSizeInput.hidden = !camera.isOrthographic;
+    });
+    return () => {
+      pane.dispose();
+    };
+  }, []);
+
+  return <></>;
 }
