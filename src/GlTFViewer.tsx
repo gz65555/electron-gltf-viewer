@@ -9,11 +9,9 @@ import {
   SphericalHarmonics3Baker,
   toBuffer,
 } from "@oasis-engine/baker";
-import { OrbitControl } from "@oasis-engine-toolkit/controls";
 import {
   AmbientLight,
   AssetType,
-  BackgroundMode,
   BoundingBox,
   Camera,
   Color,
@@ -43,6 +41,7 @@ import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
 import { IGlTF } from "./types/IGlTF";
 import { MaterialInspector } from "./components/leva/Material";
+import { OrbitControl } from "./controls";
 
 const envList = {
   sunset:
@@ -107,8 +106,7 @@ class Oasis extends EventEmitter {
       this.emit("ready");
     });
 
-    this.controller.enableDamping = false;
-
+    this.controller.addDefaultControl();
   }
 
   loadEnv(envName: keyof typeof envList) {
