@@ -2,9 +2,9 @@ import { InspectorType } from "@/store/enum";
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
 import { BaseMaterial, Camera, Entity } from "oasis-engine";
-import { CameraInspector } from "./leva/Camera";
-import { EntityInspector } from "./leva/Entity";
-import { MaterialInspector } from "./leva/Material";
+import { CameraInspector } from "./tweakpane-inspector/Camera";
+import { EntityInspector } from "./tweakpane-inspector/Entity";
+import { MaterialInspector } from "./tweakpane-inspector/Material";
 
 export const Inspector = observer(function () {
   const {

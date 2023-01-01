@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite";
 import { BottomPanel } from "./BottomPanel";
 import { Inspector } from "./Inspector";
 import { LeftPanel } from "./LeftPanel";
-import { MaterialInspector } from "./leva/Material";
+import { MaterialInspector } from "./tweakpane-inspector/Material";
 
 export const UIContainer = observer(function () {
   const { isFullScreen } = useRootStore();

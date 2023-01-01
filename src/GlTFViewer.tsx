@@ -40,7 +40,7 @@ import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
 import { IGlTF } from "./types/IGlTF";
-import { MaterialInspector } from "./components/leva/Material";
+import { MaterialInspector } from "./components/tweakpane-inspector/Material";
 import { OrbitControl } from "./controls";
 
 const envList = {
