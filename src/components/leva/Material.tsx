@@ -1,130 +1,309 @@
-import { Leva, useControls } from "leva";
 import {
   BaseMaterial,
   BlendMode,
   Color,
   RenderFace,
-  Vector2,
-  Vector3,
+  Shader,
+  ShaderData,
+  Texture2D,
   Vector4,
 } from "oasis-engine";
+import { useEffect } from "react";
+import { FolderApi, Pane } from "tweakpane";
+
 import { transformEnumToOptions } from "./utils";
+import * as TexturePlugin from "./texture2d";
 
-export function transformValue(v: any) {
-  if (v instanceof Vector2) {
-    return { x: v.x, y: v.y };
-  }
-
-  if (v instanceof Vector3) {
-    return { x: v.x, y: v.y, z: v.z };
-  }
-
-  if (v instanceof Vector4) {
-    return { x: v.x, y: v.y, z: v.z, w: v.w };
-  }
-
-  if (v instanceof Color) {
-    return { r: v.r, g: v.g, b: v.b, a: v.a };
-  }
-  return v;
+export enum MaterialPropertyGroup {
+  Common = "Common",
+  Base = "Base",
+  Normal = "Normal",
+  Emissive = "Emissive",
+  BlinnPhong = "Blinn Phong",
+  Clearcoat = "Clearcoat",
+  MetalRoughness = "Metal Roughness",
+  Occlusion = "Occlusion",
 }
 
-const pbrRender = (get) => get("shader") === "pbr";
+const folderVisibleMap: Record<string, MaterialPropertyGroup[]> = {
+  pbr: [
+    MaterialPropertyGroup.Common,
+    MaterialPropertyGroup.Base,
+    MaterialPropertyGroup.Normal,
+    MaterialPropertyGroup.Emissive,
+    MaterialPropertyGroup.Clearcoat,
+    MaterialPropertyGroup.MetalRoughness,
+    MaterialPropertyGroup.Occlusion,
+  ],
+  "blinn-phong": [
+    MaterialPropertyGroup.Common,
+    MaterialPropertyGroup.Base,
+    MaterialPropertyGroup.Normal,
+    MaterialPropertyGroup.BlinnPhong,
+  ],
+  unlit: [MaterialPropertyGroup.Common, MaterialPropertyGroup.Base],
+};
+
+function createFolders(pane: Pane, groups: MaterialPropertyGroup[]) {
+  const folders: Record<string, FolderApi> = {};
+  groups.forEach((group) => {
+    const folder = pane.addFolder({
+      title: group,
+      expanded: true,
+    });
+    folders[group] = folder;
+  });
+  return folders;
+}
+
+function changeFolderVisibility(
+  shader: string,
+  folders: Record<MaterialPropertyGroup, FolderApi>
+) {
+  for (let k in folders) {
+    const folder: FolderApi = folders[k];
+    folder.hidden = true;
+  }
+  folderVisibleMap[shader].forEach((group) => {
+    if (folders[group]) folders[group].hidden = false;
+  });
+}
 
 const uniformMap = {
+  u_baseTexture: {
+    label: "baseTex",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.Base,
+  },
   u_baseColor: {
     label: "baseColor",
-    defaultValue: { r: 1, g: 1, b: 1, a: 1 },
+    defaultValue: new Color(),
+    color: { type: "float", alpha: true },
+    view: "text",
+    folder: MaterialPropertyGroup.Base,
   },
-  // u_tilingOffset: {
-  //   label: "tilingOffset",
-  //   defaultValue: { x: 1, y: 1, z: 0, w: 0 },
-  // },
+  u_tilingOffset: {
+    label: "tilingOffset",
+    defaultValue: new Vector4(1, 1, 0, 0),
+    folder: MaterialPropertyGroup.Common,
+  },
+  u_normalTexture: {
+    label: "texture",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.Normal,
+  },
   u_normalIntensity: {
-    label: "normalIntensity",
+    label: "intensity",
     defaultValue: 1,
-    render: pbrRender,
+    folder: MaterialPropertyGroup.Normal,
+  },
+  u_emissiveTexture: {
+    label: "texture",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.Emissive,
   },
   u_emissiveColor: {
-    label: "emissiveColor",
-    defaultValue: { r: 0, g: 0, b: 0, a: 1 },
+    label: "color",
+    defaultValue: new Color(),
+    folder: MaterialPropertyGroup.Emissive,
   },
-  u_occlusionIntensity: { label: "occlusionIntensity", defaultValue: 1 },
-  u_occlusionTextureCoord: { label: "occlusionTextureCoord", defaultValue: 0 },
-  u_clearCoat: { label: "clearCoat", defaultValue: 0 },
-  u_clearCoatRoughness: { label: "clearCoatRoughness", defaultValue: 0 },
-  u_metal: { label: "metallic", defaultValue: 1, min: 0, max: 1 },
-  u_roughness: { label: "roughness", defaultValue: 1 },
+  u_occlusionTexture: {
+    label: "texture",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.Occlusion,
+  },
+  u_occlusionIntensity: {
+    label: "intensity",
+    defaultValue: 0,
+    min: 0,
+    max: 1,
+    folder: MaterialPropertyGroup.Occlusion,
+  },
+  u_occlusionTextureCoord: {
+    label: "textureCoord",
+    folder: MaterialPropertyGroup.Occlusion,
+  },
+  u_clearCoatTexture: {
+    label: "texture",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.Clearcoat,
+  },
+  u_clearCoat: {
+    label: "clearCoat",
+    defaultValue: 0,
+    min: 0,
+    max: 1,
+    folder: MaterialPropertyGroup.Clearcoat,
+  },
+  u_clearCoatRoughness: {
+    label: "roughness",
+    defaultValue: 0,
+    min: 0,
+    max: 1,
+    folder: MaterialPropertyGroup.Clearcoat,
+  },
+  u_roughnessMetallicTexture: {
+    label: "texture",
+    view: "input-texture2d",
+    folder: MaterialPropertyGroup.MetalRoughness,
+  },
+  u_metal: {
+    label: "metallic",
+    defaultValue: 0,
+    min: 0,
+    max: 1,
+    folder: MaterialPropertyGroup.MetalRoughness,
+  },
+  u_roughness: {
+    label: "roughness",
+    defaultValue: 0,
+    min: 0,
+    max: 1,
+    folder: MaterialPropertyGroup.MetalRoughness,
+  },
+};
+
+function addTextureInput(
+  uniformProperty: string,
+  material: BaseMaterial,
+  folders: Record<string, FolderApi>,
+  options: { label: string; folder: MaterialPropertyGroup }
+) {
+  folders[options.folder].addInput(
+    {
+      [options.label]: material.shaderData,
+    },
+    options.label,
+    {
+      view: "input-texture2d",
+      engine: material.engine,
+      key: uniformProperty,
+      onUploaded(texture) {
+        material.shaderData.setTexture(uniformProperty, texture);
+      },
+    }
+  );
+}
+
+function setMaterialShader(
+  material: BaseMaterial,
+  _,
+  value: string,
+  folders: any
+) {
+  material.shader = Shader.find(value);
+  const shaderData = material.shaderData;
+  shaderData.disableMacro("O3_NEED_WORLDPOS");
+  shaderData.disableMacro("OMIT_NORMAL");
+  shaderData.disableMacro("O3_NEED_TILINGOFFSET");
+
+  if (value === "unlit") {
+    shaderData.enableMacro("OMIT_NORMAL");
+    shaderData.enableMacro("O3_NEED_TILINGOFFSET");
+  } else {
+    shaderData.enableMacro("O3_NEED_WORLDPOS");
+    shaderData.enableMacro("O3_NEED_TILINGOFFSET");
+  }
+
+  changeFolderVisibility(material.shader.name, folders);
+}
+
+function setMaterialValue(
+  material: BaseMaterial,
+  property: string,
+  value: number
+) {
+  material.shaderData.setFloat(property, value);
+}
+
+const onChangeMap = {
+  u_metal: setMaterialValue,
+  u_roughness: setMaterialValue,
+  u_clearCoat: setMaterialValue,
+  u_clearCoatRoughness: setMaterialValue,
+  u_occlusionIntensity: setMaterialValue,
+  shader: setMaterialShader,
 };
 
 export function MaterialInspector(props: { material: BaseMaterial }) {
   const material = props.material;
   const shaderData = material.shaderData;
-  const properties = shaderData.getProperties();
-  const dynamicSchema = {};
-  properties.forEach((property) => {
-    const value = shaderData.getPropertyValue(property);
-    if (uniformMap[property.name]) {
-      dynamicSchema[property.name] = {
-        ...uniformMap[property.name],
-        value: transformValue(value),
-      };
-    }
-  });
-  console.log(material);
-  const schema = {
-    shader: {
-      label: "shader",
-      value: material.shader.name,
-      options: {
-        pbr: "pbr",
-        unlit: "unlit",
-        blinnPhong: "blinnPhong",
-      },
-    },
-    alphaCutoff: {
-      value: material.alphaCutoff,
+
+  useEffect(() => {
+    const pane = new Pane();
+    pane.title = `Material(${material.name})`;
+
+    pane.registerPlugin(TexturePlugin);
+
+    const folders = createFolders(pane, [
+      MaterialPropertyGroup.Base,
+      MaterialPropertyGroup.Common,
+      MaterialPropertyGroup.MetalRoughness,
+      MaterialPropertyGroup.Normal,
+      MaterialPropertyGroup.Emissive,
+      MaterialPropertyGroup.Occlusion,
+      MaterialPropertyGroup.Clearcoat,
+    ]);
+
+    folders[MaterialPropertyGroup.Base].addInput(
+      { shader: material.shader.name },
+      "shader",
+      {
+        options: {
+          pbr: "pbr",
+          unlit: "unlit",
+          blinnPhong: "blinn-phong",
+        },
+      }
+    );
+    folders[MaterialPropertyGroup.Common].addInput(material, "alphaCutoff", {
       min: 0,
       max: 1,
-      onChange(v) {
-        material.alphaCutoff = v;
-      },
-    },
-    blendMode: {
-      value: material.blendMode,
+    });
+    folders[MaterialPropertyGroup.Common].addInput(material, "blendMode", {
       options: transformEnumToOptions(BlendMode),
-      onChange(v) {
-        material.blendMode = v;
-      },
-    },
-    renderFace: {
-      value: material.renderFace,
+    });
+    folders[MaterialPropertyGroup.Common].addInput(material, "renderFace", {
       options: transformEnumToOptions(RenderFace),
-      onChange(v) {
-        material.renderFace = v;
-      },
-    },
-    isTransparent: {
-      value: material.isTransparent,
-      onChange(v) {
-        material.isTransparent = v;
-      },
-    },
-    ...dynamicSchema,
-  };
-  useControls(schema);
-  return (
-    <Leva
-      titleBar={{
-        title: `Material(${material.name ?? "noname"})`,
-        drag: false,
-        position: { x: 0, y: 0 },
-        filter: false,
-      }}
-      hidden={false}
-      flat={false}
-      fill={false}
-      hideCopyButton={true}
-    ></Leva>
-  );
+    });
+    folders[MaterialPropertyGroup.Common].addInput(material, "isTransparent", {
+      label: "transparent",
+    });
+
+    const shaderValues: Record<string, any> = {};
+
+    for (let uniformProperty in uniformMap) {
+      const options = uniformMap[uniformProperty];
+
+      if (options.view === "input-texture2d") {
+        addTextureInput(uniformProperty, material, folders, options);
+        continue;
+      }
+
+      const value = shaderData.getPropertyValue(uniformProperty);
+      shaderValues[uniformProperty] = value ?? options.defaultValue;
+
+      if (folders[options.folder]) {
+        folders[options.folder].addInput(
+          shaderValues,
+          uniformProperty,
+          options
+        );
+      } else {
+        pane.addInput(shaderValues, uniformProperty, options);
+      }
+    }
+
+    pane.on("change", (e) => {
+      if (onChangeMap[e.presetKey]) {
+        onChangeMap[e.presetKey](material, e.presetKey, e.value, folders);
+      }
+    });
+
+    return () => {
+      pane.dispose();
+    };
+  }, [material.instanceId]);
+
+  return <></>;
 }

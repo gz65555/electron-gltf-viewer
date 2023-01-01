@@ -1,13 +1,5 @@
-import { IGlTF } from "@/types/IGlTF";
 import { TreeDataNode } from "antd";
-import {
-  action,
-  computed,
-  makeAutoObservable,
-  makeObservable,
-  observable,
-  toJS,
-} from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import {
   Camera,
   Entity,
@@ -95,11 +87,16 @@ export class RootStore {
 
   @action
   selectMaterial(id: number) {
-    this.selectedMaterialId = id;
-    this.toggleInspector(
-      InspectorType.Material,
-      this.glTFResource.materials[id]
-    );
+    if (this.selectedMaterialId === id) {
+      this.selectedMaterialId = -1;
+      this.toggleInspector(InspectorType.None);
+    } else {
+      this.selectedMaterialId = id;
+      this.toggleInspector(
+        InspectorType.Material,
+        this.glTFResource.materials[id]
+      );
+    }
   }
 
   @action

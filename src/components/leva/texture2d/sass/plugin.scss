@@ -1,0 +1,190 @@
+@import "@tweakpane/core/lib/sass/plugin";
+
+.#{$prefix}-ckrv {
+  position: relative;
+
+  &.#{$prefix}-v-disabled {
+    opacity: 0.5;
+  }
+
+  &::before {
+    background-color: var(--grv-fg);
+    bottom: 0;
+    content: "";
+    height: 2px;
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  &::after {
+    background-color: var(--in-fg);
+    content: "";
+    left: 0;
+    margin: auto;
+    position: absolute;
+    right: 0;
+  }
+
+  &_w {
+    @extend %input;
+
+    cursor: pointer;
+    height: calc(var(--bld-us));
+    overflow: hidden;
+  }
+  &_o {
+    height: 100%;
+    left: 0;
+    position: relative;
+  }
+  &_g {
+    display: block;
+    height: 2px;
+    overflow: visible;
+    position: absolute;
+    width: 100%;
+  }
+  &_mjt {
+    stroke: var(--in-fg);
+    stroke-width: 2;
+    transform-origin: bottom;
+  }
+  &_mnt {
+    stroke: var(--in-fg);
+    stroke-width: 1;
+    transform-origin: bottom;
+  }
+  &_l {
+    color: var(--in-fg);
+    font-size: 0.9em;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: pre;
+  }
+  &_tt {
+    left: 50%;
+    top: -4px;
+    visibility: hidden;
+  }
+  &#{&}-tt &_tt {
+    visibility: visible;
+  }
+
+  // model 0
+  &#{&}-m0::before {
+    display: none;
+  }
+  &#{&}-m0::after {
+    bottom: 0;
+    height: 6px;
+    width: 2px;
+  }
+  &#{&}-m0 &_g {
+    bottom: 0;
+    margin: auto;
+    transform: translateY(3px);
+    top: 0;
+  }
+  &#{&}-m0 &_mjt {
+    transform: scaleY(3);
+  }
+  &#{&}-m0 &_mnt {
+    transform: scaleY(2);
+  }
+  &#{&}-m0 &_l {
+    line-height: 8px;
+    transform: translateX(-50%) scale(0.8);
+  }
+  // model 1
+  &#{&}-m1::before {
+    display: none;
+  }
+  &#{&}-m1::after {
+    bottom: 0;
+    height: 8px;
+    width: 2px;
+  }
+  &#{&}-m1 &_g {
+    bottom: 0;
+  }
+  &#{&}-m1 &_mjt {
+    stroke-width: 1;
+    transform: scaleY(4);
+  }
+  &#{&}-m1 &_mnt {
+    transform: scaleY(2);
+  }
+  &#{&}-m1 &_l {
+    line-height: 12px;
+  }
+  // model 2
+  &#{&}-m2::before {
+    transform: translateY(3px);
+  }
+  &#{&}-m2::after {
+    border-radius: 2px;
+    bottom: 1px;
+    height: 4px;
+    width: 4px;
+  }
+  &#{&}-m2 &_g {
+    display: none;
+  }
+  &#{&}-m2 &_l {
+    line-height: 12px;
+    transform: translateX(-50%);
+  }
+  // wheel
+  &#{&}-mw::before,
+  &#{&}-mw::after {
+    display: none;
+  }
+  &#{&}-mw &_g {
+    bottom: 0;
+    opacity: 0.2;
+  }
+  &#{&}-mw &_mjt,
+  &#{&}-mw &_mnt {
+    stroke: var(--in-fg);
+    stroke-width: 2;
+    transform: scaleY(10);
+  }
+  &#{&}-mw &_l {
+    display: none;
+  }
+}
+
+.#{$prefix}-ckrtxtv {
+  display: flex;
+
+  &_r {
+    width: var(--bld-us);
+    height: var(--bld-us);
+    background-color: rgb(82, 82, 82);
+    border-radius: 2px;
+    font-size: 0;
+    cursor: pointer;
+    > input {
+      width: 0%;
+      height: 0%;
+      opacity: 0;
+      font-size: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    > canvas {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 2px;
+    }
+  }
+  &_t {
+    margin-left: 4px;
+    background-color: var(--in-bg);
+  }
+}

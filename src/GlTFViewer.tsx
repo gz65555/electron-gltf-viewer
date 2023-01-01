@@ -107,6 +107,8 @@ class Oasis extends EventEmitter {
       this.emit("ready");
     });
 
+    this.controller.enableDamping = false;
+
   }
 
   loadEnv(envName: keyof typeof envList) {
