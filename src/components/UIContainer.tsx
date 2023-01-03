@@ -1,5 +1,6 @@
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
+import { AnimationPlayer } from "./AnimationPlayer";
 import { BottomPanel } from "./BottomPanel";
 import { Inspector } from "./Inspector";
 import { LeftPanel } from "./LeftPanel";

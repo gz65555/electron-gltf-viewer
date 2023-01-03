@@ -5,6 +5,8 @@ import { observer } from "mobx-react-lite";
 import { FloatButton } from "./FloatButton";
 import VideoCameraOutlined from "@ant-design/icons/lib/icons/VideoCameraOutlined";
 import { InspectorType } from "@/store/enum";
+import { AnimationPlayer } from "./AnimationPlayer";
+import { ObservedAnimationPlayer } from "./ObservedAnimationPlayer";
 
 const FullScreenButton = observer(function () {
   const rootStore = useRootStore();
@@ -28,9 +30,12 @@ const UIButtons = observer(function () {
   const rootStore = useRootStore();
   return !rootStore.isFullScreen ? (
     <>
-      <FloatButton onClick={()=>{
-        rootStore.toggleInspector(InspectorType.SceneCamera)
-      }} css={{ marginRight: 20 }}>
+      <FloatButton
+        onClick={() => {
+          rootStore.toggleInspector(InspectorType.SceneCamera);
+        }}
+        css={{ marginRight: 20 }}
+      >
         <VideoCameraOutlined />
       </FloatButton>
     </>
@@ -40,18 +45,28 @@ const UIButtons = observer(function () {
 export const BottomPanel = observer(function () {
   const { hasGlTF } = useRootStore();
   return hasGlTF ? (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "30px",
-        width: "90%",
-        display: "flex",
-        flexDirection: "row-reverse",
-        left: "5%",
-      }}
-    >
-      <FullScreenButton />
-      <UIButtons />
-    </div>
+    <>
+      <div
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          width: "90%",
+          display: "flex",
+          flexDirection: "row-reverse",
+          left: "5%",
+        }}
+      >
+        <FullScreenButton />
+        <UIButtons />
+      </div>
+      <ObservedAnimationPlayer
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          transform: "translateX(-50%)",
+          left: "50%",
+        }}
+      ></ObservedAnimationPlayer>
+    </>
   ) : null;
 });

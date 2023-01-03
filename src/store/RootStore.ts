@@ -12,6 +12,7 @@ import { createContext, useContext } from "react";
 import { EntityStore } from "./EntityStore";
 import { validateBytes } from "gltf-validator";
 import { InspectorType } from "./enum";
+import { AnimationStore } from "./AnimationStore";
 
 export class RootStore {
   @observable
@@ -56,6 +57,8 @@ export class RootStore {
     data: null,
   };
 
+  animationStore: AnimationStore = new AnimationStore();
+
   /** from glTF validator */
   glTFData: {
     info: {
@@ -67,6 +70,7 @@ export class RootStore {
       drawCallCount: number;
       totalTriangleCount: number;
       totalVertexCount: number;
+      animationCount: number;
     };
   };
 
@@ -146,6 +150,7 @@ export class RootStore {
     recursiveEntities(rootEntity, treeData);
     this.treeData = treeData;
     this.hasGlTF = true;
+    this.animationStore.init(asset.animations, asset.defaultSceneRoot);
     this.glTFData = await validateBytes(bytes);
   }
 
