@@ -3,18 +3,10 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 /* eslint no-underscore-dangle: 0 */
 import {
-  DecodeMode,
-  downloadArrayBuffer,
-  IBLBaker,
-  SphericalHarmonics3Baker,
-  toBuffer,
-} from "@oasis-engine/baker";
-import {
   AmbientLight,
   AssetType,
   BoundingBox,
   Camera,
-  Color,
   DirectLight,
   Entity,
   GLTFResource,
@@ -25,22 +17,17 @@ import {
   Renderer,
   Scene,
   SkyBoxMaterial,
-  SphericalHarmonics3,
   Texture2D,
-  TextureCube,
   Vector3,
   WebGLEngine,
 } from "oasis-engine";
-import { useEffect, useRef, useState } from "react";
-// import WrapperLayout from "../components/layout";
+import { useEffect } from "react";
 import "./gltf-viewer.less";
-// @ts-ignore
 import { SimpleDropzone } from "simple-dropzone";
 import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
 import { ipcRenderer } from "electron";
 import { IGlTF } from "./types/IGlTF";
-import { MaterialInspector } from "./components/tweakpane-inspector/Material";
 import { OrbitControl } from "./controls";
 
 const envList = {
@@ -73,15 +60,6 @@ class Oasis extends EventEmitter {
   light1: DirectLight = this.lightEntity1.addComponent(DirectLight);
   light2: DirectLight = this.lightEntity2.addComponent(DirectLight);
 
-  state = {
-    // Scene
-    background: true,
-    // Lights
-    env: "park" as any,
-    lights: true,
-    lightIntensity1: 1,
-    lightIntensity2: 1,
-  };
   _materials: Material[] = [];
 
   // temporary
@@ -99,7 +77,7 @@ class Oasis extends EventEmitter {
   constructor() {
     super();
 
-    this.loadEnv(this.state.env).then(() => {
+    this.loadEnv("pisa").then(() => {
       this.initScene();
       this.initDropZone();
       this.initDefaultDebugMesh();
@@ -107,136 +85,6 @@ class Oasis extends EventEmitter {
     });
 
     this.controller.addDefaultControl();
-  }
-
-  loadEnv(envName: keyof typeof envList) {
-    return new Promise((resolve) => {
-      this.engine.resourceManager
-        .load<AmbientLight>({
-          type: AssetType.Env,
-          url: envList[envName],
-        })
-        .then((env) => {
-          this.env[envName] = env;
-
-          this.scene.ambientLight = env;
-          // this.skyMaterial.textureCubeMap = env.specularTexture;
-          // this.skyMaterial.textureDecodeRGBM = true;
-          resolve(true);
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    });
-  }
-
-  initScene() {
-    this.engine.canvas.resizeByClientSize();
-    this.controller.minDistance = 0;
-
-    // debug sync
-    if (this.state.background) {
-      // this.scene.background.mode = BackgroundMode.Sky;
-    }
-    if (!this.state.lights) {
-      this.light1.enabled = this.light2.enabled = false;
-    }
-    this.light1.intensity = this.state.lightIntensity1;
-    this.light2.intensity = this.state.lightIntensity2;
-    this.lightEntity1.transform.setRotation(-45, 0, 0);
-    this.lightEntity2.transform.setRotation(-45, 180, 0);
-    this.engine.run();
-
-    window.onresize = () => {
-      this.engine.canvas.resizeByClientSize();
-    };
-  }
-
-  initDefaultDebugMesh() {
-    const mesh = PrimitiveMesh.createSphere(this.engine, 5, 64);
-    const material = new PBRMaterial(this.engine);
-    material.metallic = 1;
-    material.roughness = 0;
-    material.name = "default";
-    const renderer = this.gltfRootEntity.addComponent(MeshRenderer);
-
-    renderer.mesh = mesh;
-    renderer.setMaterial(material);
-
-    this.setCenter([renderer]);
-  }
-
-  setCenter(renderers: Renderer[]) {
-    const boundingBox = this._boundingBox;
-    const center = this._center;
-    const extent = this._extent;
-
-    boundingBox.min.set(0, 0, 0);
-    boundingBox.max.set(0, 0, 0);
-
-    renderers.forEach((renderer) => {
-      BoundingBox.merge(renderer.bounds, boundingBox, boundingBox);
-    });
-    boundingBox.getExtent(extent);
-    const size = extent.length();
-
-    boundingBox.getCenter(center);
-    this.controller.target.set(center.x, center.y, center.z);
-    this.cameraEntity.transform.setPosition(center.x, center.y, size * 3);
-
-    this.camera.farClipPlane = size * 12;
-    this.camera.nearClipPlane = size / 100;
-
-    this.controller.maxDistance = size * 10;
-  }
-
-  initDropZone() {
-    const dropCtrl = new SimpleDropzone(document.body, this.$input);
-    dropCtrl.on("drop", ({ files }) => this.loadFileMaps(files));
-  }
-
-  loadFileMaps(files: Map<string, File>) {
-    const modelReg = /\.(gltf|glb)$/i;
-    const imgReg = /\.(jpg|jpeg|png)$/i;
-    const envReg = /\.(hdr|hdri)$/i;
-
-    let mainFile: File;
-    let type = "gltf";
-
-    const filesMap = {}; // [fileName]:LocalUrl
-    const fileArray: any = Array.from(files); // ['/*/*.*',obj:File]
-
-    fileArray.some((f) => {
-      const file = f[1];
-      if (modelReg.test(file.name)) {
-        type = RegExp.$1;
-        mainFile = file;
-        return true;
-      }
-
-      return false;
-    });
-
-    fileArray.forEach((f) => {
-      const file = f[1];
-      if (!modelReg.test(file.name)) {
-        const url = URL.createObjectURL(file);
-        const fileName = file.name;
-        filesMap[fileName] = url;
-        if (imgReg.test(fileName)) {
-          this.addTexture(fileName, url);
-        } else if (envReg.test(fileName)) {
-          this.addEnv(fileName, url);
-        }
-      }
-    });
-
-    if (mainFile) {
-      mainFile.arrayBuffer().then((buffer) => {
-        const url = URL.createObjectURL(mainFile);
-        this.loadModel(url, filesMap, type as any, new Uint8Array(buffer));
-      });
-    }
   }
 
   loadModel(
@@ -299,8 +147,122 @@ class Oasis extends EventEmitter {
     }
   }
 
+  private loadEnv(envName: keyof typeof envList) {
+    return new Promise((resolve) => {
+      this.engine.resourceManager
+        .load<AmbientLight>({
+          type: AssetType.Env,
+          url: envList[envName],
+        })
+        .then((env) => {
+          this.env[envName] = env;
+
+          this.scene.ambientLight = env;
+          // this.skyMaterial.textureCubeMap = env.specularTexture;
+          // this.skyMaterial.textureDecodeRGBM = true;
+          resolve(true);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    });
+  }
+
+  private initScene() {
+    this.engine.canvas.resizeByClientSize();
+    this.controller.minDistance = 0;
+
+    this.lightEntity1.transform.setRotation(-45, 0, 0);
+    this.lightEntity2.transform.setRotation(-45, 180, 0);
+    this.engine.run();
+
+    window.onresize = () => {
+      this.engine.canvas.resizeByClientSize();
+    };
+  }
+
+  private initDefaultDebugMesh() {
+    const mesh = PrimitiveMesh.createSphere(this.engine, 5, 64);
+    const material = new PBRMaterial(this.engine);
+    material.metallic = 1;
+    material.roughness = 0;
+    material.name = "default";
+    const renderer = this.gltfRootEntity.addComponent(MeshRenderer);
+
+    renderer.mesh = mesh;
+    renderer.setMaterial(material);
+
+    this.setCenter([renderer]);
+  }
+
+  private setCenter(renderers: Renderer[]) {
+    const boundingBox = this._boundingBox;
+    const center = this._center;
+    const extent = this._extent;
+
+    boundingBox.min.set(0, 0, 0);
+    boundingBox.max.set(0, 0, 0);
+
+    renderers.forEach((renderer) => {
+      BoundingBox.merge(renderer.bounds, boundingBox, boundingBox);
+    });
+    boundingBox.getExtent(extent);
+    const size = extent.length();
+
+    boundingBox.getCenter(center);
+    this.controller.target.set(center.x, center.y, center.z);
+    this.cameraEntity.transform.setPosition(center.x, center.y, size * 3);
+
+    this.camera.farClipPlane = size * 12;
+    this.camera.nearClipPlane = size / 100;
+
+    this.controller.maxDistance = size * 10;
+  }
+
+  private initDropZone() {
+    const dropCtrl = new SimpleDropzone(document.body, this.$input);
+    dropCtrl.on("drop", ({ files }) => this.loadFileMaps(files));
+  }
+
+  private loadFileMaps(files: Map<string, File>) {
+    const modelReg = /\.(gltf|glb)$/i;
+
+    let mainFile: File;
+    let type = "gltf";
+
+    const filesMap = {}; // [fileName]:LocalUrl
+    const fileArray: any = Array.from(files); // ['/*/*.*',obj:File]
+
+    fileArray.some((f) => {
+      const file = f[1];
+      if (modelReg.test(file.name)) {
+        type = RegExp.$1;
+        mainFile = file;
+        return true;
+      }
+
+      return false;
+    });
+
+    fileArray.forEach((f) => {
+      const file = f[1];
+      if (!modelReg.test(file.name)) {
+        const url = URL.createObjectURL(file);
+        const fileName = file.name;
+        filesMap[fileName] = url;
+      }
+    });
+
+    if (mainFile) {
+      mainFile.arrayBuffer().then((buffer) => {
+        const url = URL.createObjectURL(mainFile);
+        this.loadModel(url, filesMap, type as any, new Uint8Array(buffer));
+      });
+    }
+  }
+
   /** 加载完毕 */
-  handleGlTFResource(asset: GLTFResource, buffer: Uint8Array) {
+  private handleGlTFResource(asset: GLTFResource, buffer: Uint8Array) {
     const { defaultSceneRoot, materials, animations } = asset;
     this.dropSuccess();
     this.gltfRootEntity = defaultSceneRoot;
@@ -314,93 +276,57 @@ class Oasis extends EventEmitter {
     this.setCenter(meshRenderers);
   }
 
-  addTexture(name: string, url: string) {
-    const repeat = Object.keys(this.textures).find(
-      (textureName) => textureName === name
-    );
-    if (repeat) {
-      console.warn(`${name} 已经存在，请更换图片名字重新上传`);
-      return;
-    }
-    this.engine.resourceManager
-      .load<Texture2D>({
-        type: AssetType.Texture2D,
-        url,
-      })
-      .then((texture) => {
-        this.textures[name] = texture;
-        console.log("图片上传成功！", name);
-      });
-  }
-
-  async addEnv(name: keyof typeof envList, url: string) {
-    const texture = await this.engine.resourceManager.load<TextureCube>({
-      url,
-      type: "HDR-RGBE", // from baker
-    });
-
-    const bakedHDRCubeMap = IBLBaker.fromTextureCubeMap(
-      texture,
-      DecodeMode.RGBE
-    );
-
-    const sh = new SphericalHarmonics3();
-    SphericalHarmonics3Baker.fromTextureCubeMap(texture, DecodeMode.RGBE, sh);
-    const arrayBuffer = toBuffer(bakedHDRCubeMap, sh);
-    downloadArrayBuffer(arrayBuffer, name);
-
-    // update debugger
-    const blob = new Blob([arrayBuffer], { type: "text/plain" });
-    const bakeUrl = URL.createObjectURL(blob);
-    this.state.env = name;
-    envList[name] = bakeUrl;
-    this.loadEnv(name);
-  }
-
-  dropStart() {
+  private dropStart() {
     this.$dropZone!.classList.add("hide");
     this.$spinner!.classList.remove("hide");
   }
 
-  dropError() {
+  private dropError() {
     this.$dropZone!.classList.remove("hide");
     this.$spinner!.classList.add("hide");
   }
 
-  dropSuccess() {
+  private dropSuccess() {
     this.$dropZone!.classList.add("hide");
     this.$spinner!.classList.add("hide");
   }
 
-  destroyGLTF() {
+  private destroyGLTF() {
     this.gltfRootEntity.destroy();
   }
 }
 
 let oasis: Oasis = null;
+
 export function GlTFView() {
   const rootStore = useRootStore();
-  const [ready, setReady] = useState(false);
   useEffect(() => {
     if (!oasis) {
       oasis = new Oasis();
-      setReady(true);
+
       function openFile(arg: Uint8Array) {
         const blob = URL.createObjectURL(new Blob([arg.buffer]));
         oasis.loadModel(blob, {}, "glb", arg);
       }
+
+      /** 进来后打开 glTF 文件 */
       ipcRenderer.on("file-opened", (event, arg: Uint8Array) => {
         openFile(arg);
       });
+
+      /** 直接打开 glTF/glb 文件 */
       ipcRenderer.on("file-opened-once", (event, arg: Uint8Array) => {
-        console.log("file-opened-once", arg);
         if (arg) {
           openFile(arg);
         } else {
           postMessage({ payload: "removeLoading" }, "*");
         }
       });
+
+      /** React 初始化完成，发送获取文件消息 */
       ipcRenderer.send("init-file-fetch");
+
+      /** glTF loaded */
       oasis.on("loaded", (asset: GLTFResource, buffer) => {
         rootStore.initGlTF(asset, buffer);
         postMessage({ payload: "removeLoading" }, "*");
