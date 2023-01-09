@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
 import fs from "fs";
+import { readModelFile } from "./gltf/reader";
 
 export function createMenu() {
   return Menu.buildFromTemplate([
@@ -30,24 +31,16 @@ export function createMenu() {
                   { name: "Models", extensions: ["gltf", "glb", "fbx"] },
                 ],
               })
-              .then(function (fileObj) {
+              .then(async function (fileObj) {
                 // the fileObj has two props
                 if (!fileObj.canceled) {
                   // win.webContents.send("FILE_OPEN", fileObj.filePaths);
                   const modelPath = fileObj.filePaths[0];
-                  fs.readFile(modelPath, (err, buffer) => {
-                    if (err) {
-                      console.log(err);
-                    }
-                    const allWindows = BrowserWindow.getAllWindows();
-                    if (allWindows[0]) {
-                      allWindows[0].webContents.send("file-opened", buffer);
-                    }
-                    // app.getWin()[0].webContents.send();
-                    // } else {
-                    // win.webContents.send("FILE_OPEN", buffer);
-                    // }
-                  });
+                  app.addRecentDocument(modelPath);
+                  const buffer = await readModelFile(modelPath);
+                  const allWindows = BrowserWindow.getAllWindows();
+                  allWindows[0] &&
+                    allWindows[0].webContents.send("file-opened", buffer);
                 }
               })
               // should always handle the error yourself, later Electron release might crash if you don't
@@ -55,6 +48,37 @@ export function createMenu() {
                 console.error(err);
               });
           },
+        },
+      ],
+    },
+    {
+      label: "Application",
+      submenu: [
+        {
+          label: "About Application",
+        },
+        { type: "separator" },
+        {
+          label: "Quit",
+          accelerator: "Command+Q",
+          click: function () {
+            app.quit();
+          },
+        },
+      ],
+    },
+    {
+      label: "Edit",
+      submenu: [
+        { label: "Undo", accelerator: "CmdOrCtrl+Z" },
+        { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z" },
+        { type: "separator" },
+        { label: "Cut", accelerator: "CmdOrCtrl+X" },
+        { label: "Copy", accelerator: "CmdOrCtrl+C" },
+        { label: "Paste", accelerator: "CmdOrCtrl+V" },
+        {
+          label: "Select All",
+          accelerator: "CmdOrCtrl+A",
         },
       ],
     },

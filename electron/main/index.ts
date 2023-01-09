@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
 import { release } from "os";
 import path from "path";
-import fs from "fs";
+import { readModelFile } from "./gltf/reader";
 import { createMenu } from "./menu";
 
 // Disable GPU Acceleration for Windows 7
@@ -28,7 +28,7 @@ const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = path.join(process.env.DIST, "index.html");
 
 app.on("will-finish-launching", () => {
-  app.on("open-file", (event, modelPath) => {
+  app.on("open-file", (event, modelPath: string) => {
     openFile(modelPath);
   });
 });
@@ -42,6 +42,7 @@ async function createWindow(modelPath: string = null) {
       preload,
       nodeIntegration: true,
       contextIsolation: false,
+      nodeIntegrationInWorker: true,
     },
   });
 
@@ -100,28 +101,19 @@ app.on("activate", () => {
   }
 });
 
-async function openFile(modelPath) {
+async function openFile(modelPath: string) {
+  // 添加到最近访问
   app.addRecentDocument(modelPath);
   if (win) {
+    // 如果软件已经打开，直接发送文件打开消息
     const buffer = await readModelFile(modelPath);
     win.webContents.send("file-opened", buffer);
   } else {
+    // 如果是第一次打开，判断 app 是否 ready
     if (app.isReady()) {
       createWindow(modelPath);
     } else {
       openedFile = modelPath;
     }
   }
-}
-
-function readModelFile(modelPath: string) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(modelPath, (err, buffer) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(buffer);
-      }
-    });
-  });
 }

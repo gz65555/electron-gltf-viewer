@@ -23,6 +23,7 @@ export class AnimationStore {
   }
 
   init(clips: AnimationClip[], entity: Entity) {
+    if (!clips) return;
     this._animationClips = clips;
     this._entity = entity;
     const onUpdate = this.onUpdate.bind(this);
