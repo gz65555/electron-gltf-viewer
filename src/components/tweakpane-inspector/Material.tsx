@@ -6,6 +6,7 @@ import {
   Shader,
   ShaderData,
   Texture2D,
+  Vector2,
   Vector4,
 } from "oasis-engine";
 import { useEffect } from "react";
@@ -122,6 +123,7 @@ const uniformMap = {
   u_occlusionTextureCoord: {
     label: "textureCoord",
     folder: MaterialPropertyGroup.Occlusion,
+    defaultValue: new Vector2(),
   },
   u_clearCoatTexture: {
     label: "texture",
@@ -284,6 +286,7 @@ export function MaterialInspector(props: { material: BaseMaterial }) {
       shaderValues[uniformProperty] = value ?? options.defaultValue;
 
       if (folders[options.folder]) {
+        console.log(uniformProperty, options);
         folders[options.folder].addInput(
           shaderValues,
           uniformProperty,

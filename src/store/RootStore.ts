@@ -49,6 +49,9 @@ export class RootStore {
   glTFResource: GLTFResource;
 
   @observable
+  glTFId: number = -1;
+
+  @observable
   inspectorData: {
     type: InspectorType;
     data: Entity | Camera | Scene | Material;
@@ -119,8 +122,10 @@ export class RootStore {
 
   @action
   async initGlTF(asset: GLTFResource, bytes: Uint8Array) {
+    this.reset();
     const rootEntity = asset.defaultSceneRoot;
     this.glTFResource = asset;
+    this.glTFId = asset.instanceId;
     this.glTFRoot = rootEntity;
     this.engine = rootEntity.engine as WebGLEngine;
     this.sceneCamera = this.engine.sceneManager.activeScene
@@ -157,6 +162,16 @@ export class RootStore {
   @action
   toggleFullScreen() {
     this.isFullScreen = !this.isFullScreen;
+  }
+
+  @action
+  reset() {
+    this.isFullScreen = false;
+    this.selectedEntityId = "";
+    this.selectedMaterialId = -1;
+    this.searchText = "";
+    this.inspectorData.data = null;
+    this.inspectorData.type = InspectorType.None;
   }
 
   getExpands() {

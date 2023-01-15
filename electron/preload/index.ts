@@ -84,15 +84,6 @@ function useLoading() {
   };
 }
 
-// console.log("preload");
-// listenFileTransfer();
-
-// function listenFileTransfer() {
-  
-// }
-
-// ----------------------------------------------------------------------
-
 const { appendLoading, removeLoading } = useLoading();
 domReady().then(appendLoading);
 
@@ -100,4 +91,10 @@ window.onmessage = (ev) => {
   ev.data.payload === "removeLoading" && removeLoading();
 };
 
+ipcRenderer.on("appendLoading", () => {
+  console.log("hello");
+  appendLoading();
+});
+
+// debug reload
 setTimeout(removeLoading, 4999);

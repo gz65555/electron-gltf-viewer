@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
 import fs from "fs";
-import { readModelFile } from "./gltf/reader";
+import { openFile, readModelFile } from "./gltf/reader";
 
 export function createMenu() {
   return Menu.buildFromTemplate([
@@ -34,13 +34,8 @@ export function createMenu() {
               .then(async function (fileObj) {
                 // the fileObj has two props
                 if (!fileObj.canceled) {
-                  // win.webContents.send("FILE_OPEN", fileObj.filePaths);
-                  const modelPath = fileObj.filePaths[0];
-                  app.addRecentDocument(modelPath);
-                  const buffer = await readModelFile(modelPath);
                   const allWindows = BrowserWindow.getAllWindows();
-                  allWindows[0] &&
-                    allWindows[0].webContents.send("file-opened", buffer);
+                  openFile(allWindows[0], fileObj.filePaths[0]);
                 }
               })
               // should always handle the error yourself, later Electron release might crash if you don't

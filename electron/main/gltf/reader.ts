@@ -5,6 +5,17 @@ import { dedup, center, weld } from "@gltf-transform/functions";
 import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
 import fetch from "node-fetch";
 import draco3d from "draco3dgltf";
+import { BrowserWindow } from "electron";
+
+export async function openFile(win: BrowserWindow, filepath: string) {
+  // 如果是第一次打开，返回 false
+  if (!win) return false;
+  // 如果软件已经打开，直接发送文件打开消息
+  win.webContents.send("appendLoading");
+  const buffer = await readModelFile(filepath);
+  win.webContents.send("file-opened", buffer);
+  return true;
+}
 
 let _io;
 async function getIO() {

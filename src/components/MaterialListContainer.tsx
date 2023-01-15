@@ -25,20 +25,23 @@ export const MaterialListContainer = observer(function () {
   const root = useRootStore();
   const {
     glTFResource: { materials },
+    glTFId,
   } = root;
 
   return (
     <>
-      {materials.map((material, index) => (
-        <MaterialItem
-          selected={index === root.selectedMaterialId}
-          onClick={() => {
-            root.selectMaterial(index);
-          }}
-          key={material.instanceId}
-          material={material}
-        />
-      ))}
+      {glTFId > 0
+        ? materials.map((material, index) => (
+            <MaterialItem
+              selected={index === root.selectedMaterialId}
+              onClick={() => {
+                root.selectMaterial(index);
+              }}
+              key={material.instanceId}
+              material={material}
+            />
+          ))
+        : null}
     </>
   );
 });

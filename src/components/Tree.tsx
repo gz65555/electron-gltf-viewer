@@ -90,7 +90,7 @@ function generateSearchItems(searchText: string, entities: Entity[]) {
 
 export const Tree = observer(function () {
   const rootStore = useRootStore();
-  const { glTFRoot, entities, searchText } = rootStore;
+  const { glTFRoot, entities, searchText, glTFId } = rootStore;
 
   const platEntities = React.useMemo(() => {
     const treeItems = [];
@@ -102,28 +102,31 @@ export const Tree = observer(function () {
 
   const entityTree = React.useMemo(
     () => recursiveGenerateTreeItem(glTFRoot),
-    []
+    [glTFId]
   );
 
   const isSearch = searchText.length > 0;
 
-  console.log(rootStore.getExpands());
-
   return (
-    <TreeView
-      selected={rootStore.selectedEntityId}
-      onNodeSelect={(e, nodeId: string) => {
-        console.log("selected", nodeId);
-        rootStore.select(nodeId);
-      }}
-      style={{ color: "white" }}
-      aria-label="file system navigator"
-      defaultCollapseIcon={<ExpandMoreIcon />}
-      defaultExpandIcon={<ChevronRightIcon />}
-      sx={{ flexGrow: 1, maxWidth: 400, overflowY: "auto" }}
-    >
-      {isSearch ? generateSearchItems(searchText, platEntities) : entityTree}
-      {/* {entityTree} */}
-    </TreeView>
+    <>
+      {
+        <TreeView
+          selected={rootStore.selectedEntityId}
+          onNodeSelect={(e, nodeId: string) => {
+            console.log("selected", nodeId);
+            rootStore.select(nodeId);
+          }}
+          style={{ color: "white" }}
+          aria-label="file system navigator"
+          defaultCollapseIcon={<ExpandMoreIcon />}
+          defaultExpandIcon={<ChevronRightIcon />}
+          sx={{ flexGrow: 1, maxWidth: 400, overflowY: "auto" }}
+        >
+          {isSearch
+            ? generateSearchItems(searchText, platEntities)
+            : entityTree}
+        </TreeView>
+      }
+    </>
   );
 });

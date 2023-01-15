@@ -1,7 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
 import { release } from "os";
 import path from "path";
-import { readModelFile } from "./gltf/reader";
+import { openFile, readModelFile } from "./gltf/reader";
 import { createMenu } from "./menu";
 
 // Disable GPU Acceleration for Windows 7
@@ -28,8 +28,17 @@ const url = process.env.VITE_DEV_SERVER_URL;
 const indexHtml = path.join(process.env.DIST, "index.html");
 
 app.on("will-finish-launching", () => {
-  app.on("open-file", (event, modelPath: string) => {
-    openFile(modelPath);
+  app.on("open-file", async (event, modelPath: string) => {
+    // 添加到最近访问
+    app.addRecentDocument(modelPath);
+    const success = await openFile(win, modelPath);
+    if (!success) {
+      if (app.isReady()) {
+        createWindow(modelPath);
+      } else {
+        openedFile = modelPath;
+      }
+    }
   });
 });
 
@@ -49,6 +58,8 @@ async function createWindow(modelPath: string = null) {
   win.maximize();
 
   Menu.setApplicationMenu(createMenu());
+
+  console.log("create window!!!!!!!!", modelPath);
 
   const bufferPromise = modelPath
     ? readModelFile(modelPath)
@@ -100,20 +111,3 @@ app.on("activate", () => {
     createWindow();
   }
 });
-
-async function openFile(modelPath: string) {
-  // 添加到最近访问
-  app.addRecentDocument(modelPath);
-  if (win) {
-    // 如果软件已经打开，直接发送文件打开消息
-    const buffer = await readModelFile(modelPath);
-    win.webContents.send("file-opened", buffer);
-  } else {
-    // 如果是第一次打开，判断 app 是否 ready
-    if (app.isReady()) {
-      createWindow(modelPath);
-    } else {
-      openedFile = modelPath;
-    }
-  }
-}

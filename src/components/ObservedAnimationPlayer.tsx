@@ -6,13 +6,13 @@ import { AnimationPlayer } from "./AnimationPlayer";
 export const ObservedAnimationPlayer = observer(function (props: {
   style?: CSSProperties;
 }) {
-  const { glTFResource, animationStore, isFullScreen } = useRootStore();
+  const { glTFResource, animationStore, isFullScreen, glTFId } = useRootStore();
   const hasAnimations =
     glTFResource.animations && glTFResource.animations.length > 0;
 
   return (
     <>
-      {hasAnimations && !isFullScreen ? (
+      {glTFId > 0 && hasAnimations && !isFullScreen ? (
         <AnimationPlayer
           style={props.style}
           isPaused={!animationStore.isPlaying}
