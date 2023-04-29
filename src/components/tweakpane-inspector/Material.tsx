@@ -14,6 +14,7 @@ import { FolderApi, Pane } from "tweakpane";
 
 import { transformEnumToOptions } from "./utils";
 import * as TexturePlugin from "./texture2d";
+import { rootStore } from "@/store/RootStore";
 
 export enum MaterialPropertyGroup {
   Common = "Common",
@@ -182,6 +183,9 @@ function addTextureInput(
       key: uniformProperty,
       onUploaded(texture) {
         material.shaderData.setTexture(uniformProperty, texture);
+      },
+      onPreview(ctx: CanvasRenderingContext2D) {
+        rootStore.imagePreviewStore.show(ctx);
       },
     }
   );

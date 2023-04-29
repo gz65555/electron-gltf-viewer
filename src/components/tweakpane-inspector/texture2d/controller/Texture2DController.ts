@@ -9,9 +9,10 @@ interface Config {
   viewProps: ViewProps;
   engine: WebGLEngine;
   onUploaded?: OnUploaded;
+  onPreview?: Function;
 }
 
-export class TextureNameController
+export class Texture2DController
   implements ValueController<Texture2D, TextureNameView>
 {
   public readonly value: Value<Texture2D>;
@@ -19,12 +20,14 @@ export class TextureNameController
   public readonly viewProps: ViewProps;
   public readonly engine: WebGLEngine;
   public readonly onUploaded: OnUploaded | undefined;
+  public readonly onPreview: Function | undefined;
 
   constructor(doc: Document, config: Config) {
     this.value = config.value;
     this.viewProps = config.viewProps;
     this.engine = config.engine;
     this.onUploaded = config.onUploaded;
+    this.onPreview = config.onPreview;
 
     const value = config.value.rawValue;
     this.value = config.value;
@@ -55,6 +58,12 @@ export class TextureNameController
         this.putTexture2DToCanvas(texture);
         this.onUploaded && this.onUploaded(texture);
       });
+    });
+
+    this.view.textElem.addEventListener("click", () => {
+      if (this.value.rawValue instanceof Texture2D) {
+        this.onPreview && this.onPreview(this.view.ctx);
+      }
     });
   }
 

@@ -11,6 +11,7 @@ export class Texture2DView implements View {
   public readonly element: HTMLElement;
   public readonly input: HTMLInputElement;
   public readonly ctx: CanvasRenderingContext2D;
+  public readonly textElem: HTMLDivElement;
 
   constructor(doc: Document, config: Config) {
     this.element = doc.createElement("div");
@@ -30,8 +31,8 @@ export class Texture2DView implements View {
 
     const canvas = doc.createElement("canvas");
     elem.appendChild(canvas);
-    canvas.width = 60;
-    canvas.height = 60;
+    canvas.width = 512;
+    canvas.height = 512;
     this.ctx = canvas.getContext("2d")!;
 
     const textElem = doc.createElement("div");
@@ -48,5 +49,6 @@ export class Texture2DView implements View {
     divElem.appendChild(inputElem);
 
     this.element.appendChild(textElem);
+    this.textElem = textElem;
   }
 }

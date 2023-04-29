@@ -13,6 +13,7 @@ import { EntityStore } from "./EntityStore";
 import { validateBytes } from "gltf-validator";
 import { InspectorType } from "./enum";
 import { AnimationStore } from "./AnimationStore";
+import { ImagePreviewStore } from "./ImagePreviewStore";
 
 export class RootStore {
   @observable
@@ -60,7 +61,8 @@ export class RootStore {
     data: null,
   };
 
-  animationStore: AnimationStore = new AnimationStore();
+  animationStore = new AnimationStore();
+  imagePreviewStore = new ImagePreviewStore();
 
   /** from glTF validator */
   glTFData: {

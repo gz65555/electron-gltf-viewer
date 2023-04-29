@@ -7,7 +7,7 @@ import {
   parseParams,
 } from "@tweakpane/core";
 
-import { TextureNameController as Texture2DController } from "./controller/Texture2DController";
+import { Texture2DController } from "./controller/Texture2DController";
 import "./sass/plugin.scss";
 import { ShaderData, Texture2D, WebGLEngine } from "oasis-engine";
 import { Texture2DInputParams } from "./type";
@@ -28,6 +28,7 @@ export const Texture2DInputPlugin: InputBindingPlugin<
       onUploaded: p.optional.function as ParamsParser<
         (texture2D: Texture2D) => void
       >,
+      onPreview: p.optional.function,
       key: p.required.string,
     });
 
@@ -63,6 +64,7 @@ export const Texture2DInputPlugin: InputBindingPlugin<
       onUploaded: args.params.onUploaded,
       value: args.value,
       viewProps: args.viewProps,
+      onPreview: args.params.onPreview,
     });
   },
 };
