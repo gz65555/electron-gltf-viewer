@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { Document, NodeIO } from "@gltf-transform/core";
 import { dedup, center, weld } from "@gltf-transform/functions";
 import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";

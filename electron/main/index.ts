@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain, Menu, dialog } from "electron";
-import { release } from "os";
-import path from "path";
+import { release } from "node:os";
+import path from "node:path";
 import { openFile, readModelFile } from "./gltf/reader";
 import { createMenu } from "./menu";
 
@@ -25,7 +25,6 @@ let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = path.join(__dirname, "../preload/index.js");
 const url = process.env.VITE_DEV_SERVER_URL;
-const indexHtml = path.join(process.env.DIST, "index.html");
 
 app.on("will-finish-launching", () => {
   app.on("open-file", async (event, modelPath: string) => {
@@ -46,7 +45,7 @@ let openedFile: string = null;
 async function createWindow(modelPath: string = null) {
   win = new BrowserWindow({
     title: "GlTF Viewer",
-    icon: path.join(process.env.PUBLIC, "favicon.svg"),
+    icon: path.join(process.env.PUBLIC, "icon.png"),
     webPreferences: {
       preload,
       nodeIntegration: true,
@@ -59,8 +58,6 @@ async function createWindow(modelPath: string = null) {
 
   Menu.setApplicationMenu(createMenu());
 
-  console.log("create window!!!!!!!!", modelPath);
-
   const bufferPromise = modelPath
     ? readModelFile(modelPath)
     : Promise.resolve();
@@ -69,11 +66,13 @@ async function createWindow(modelPath: string = null) {
     win.webContents.send("file-opened-once", buffer);
   });
 
-  if (app.isPackaged) {
-    win.loadFile(indexHtml);
-  } else {
-    win.loadURL(url);
+  console.log("isPackaged", app.isPackaged);
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    win.loadURL(process.env.VITE_DEV_SERVER_URL);
     win.webContents.openDevTools();
+  } else {
+    win.loadFile(path.join(__dirname, "../../dist/index.html"));
   }
 
   // Make all links open with the browser, not with the application

@@ -1,5 +1,4 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
-import fs from "fs";
 import { openFile, readModelFile } from "./gltf/reader";
 
 export function createMenu() {

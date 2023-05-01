@@ -26,9 +26,10 @@ import "./gltf-viewer.less";
 import { SimpleDropzone } from "simple-dropzone";
 import { EventEmitter } from "eventemitter3";
 import { useRootStore } from "./store/RootStore";
-import { ipcRenderer } from "electron";
 import { IGlTF } from "./types/IGlTF";
 import { OrbitControl } from "./controls";
+
+const { ipcRenderer } = window.require('electron');
 
 const envList = {
   sunset:

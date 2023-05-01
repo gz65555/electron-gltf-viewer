@@ -1,4 +1,4 @@
-import { ipcRenderer } from "electron";
+const { ipcRenderer } = window.require('electron');
 
 function domReady(
   condition: DocumentReadyState[] = ["complete", "interactive"]

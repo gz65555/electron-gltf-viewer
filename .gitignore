@@ -7,10 +7,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+.esmodule
 node_modules
 dist
 dist-ssr
 *.local
+dist-electron
 
 # Editor directories and files
 .idea

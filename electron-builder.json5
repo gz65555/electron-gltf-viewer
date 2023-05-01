@@ -5,13 +5,16 @@
   appId: "YourAppID",
   productName: "GlTF Viewer",
   copyright: "Copyright © 2022 Gz65555",
-  asar: true,
-  fileAssociations: [{ ext: "glb", role: "Editor" }],
+  asar: false,
+  fileAssociations: [
+    { ext: "glb", role: "Editor" },
+    { ext: "gltf", role: "Editor" },
+  ],
   directories: {
     output: "release/${version}",
     buildResources: "electron/resources",
   },
-  files: ["dist"],
+  files: ["dist", "dist-electron", ".esmodule/**"],
   win: {
     target: [
       {
@@ -30,7 +33,7 @@
   mac: {
     icon: "assets/icon.png",
     target: ["dmg"],
-    artifactName: "${productName}-Mac-${version}-Installer.${ext}",
+    artifactName: "${productName}_${version}.${ext}",
   },
   linux: {
     target: ["AppImage"],

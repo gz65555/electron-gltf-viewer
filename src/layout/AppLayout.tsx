@@ -4,7 +4,7 @@ export const AppLayout = function (props: {
   center: JSX.Element;
   right: JSX.Element;
 }) {
-  return (
+  return <div></div>
     // <div
     //   style={{
     //     display: "flex",
@@ -47,5 +47,5 @@ export const AppLayout = function (props: {
     //     </div>
     //   </div>
     // </div>
-  );
+  // );
 };
