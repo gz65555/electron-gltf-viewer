@@ -1,0 +1,11 @@
+{
+    "about": {
+        "name": "Einstein"
+    },
+    "assets": {
+        "animFrame": 24,
+        "computeNormals": "never",
+        "blendShape": [],
+        "foods": []
+    }
+}

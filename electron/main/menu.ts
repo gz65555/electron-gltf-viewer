@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
 import { openFile, readModelFile } from "./gltf/reader";
+import { preferences } from "./preference/preference";
 
 export function createMenu() {
   return Menu.buildFromTemplate([
@@ -10,6 +11,13 @@ export function createMenu() {
           label: "Exit",
           click() {
             app.quit();
+          },
+        },
+        {
+          label: "Preference",
+          accelerator: "CmdOrCtrl+,",
+          click() {
+            preferences.show();
           },
         },
       ],
