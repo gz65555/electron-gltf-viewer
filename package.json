@@ -9,6 +9,7 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
+    "postinstall": "node modify-gltf-validator.js",
     "build": "tsc && vite build && electron-builder"
   },
   "engines": {
