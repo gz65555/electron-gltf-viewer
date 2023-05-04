@@ -116,7 +116,7 @@ export const Tree = observer(function () {
             console.log("selected", nodeId);
             rootStore.select(nodeId);
           }}
-          style={{ color: "white" }}
+          style={{ color: "white", overflowX: "hidden" }}
           aria-label="file system navigator"
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
