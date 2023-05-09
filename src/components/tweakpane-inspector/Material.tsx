@@ -4,8 +4,6 @@ import {
   Color,
   RenderFace,
   Shader,
-  ShaderData,
-  Texture2D,
   Vector2,
   Vector4,
 } from "oasis-engine";
