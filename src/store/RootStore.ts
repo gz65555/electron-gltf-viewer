@@ -114,6 +114,8 @@ export class RootStore {
     this.inspectorData.data = data;
     if (type === InspectorType.SceneCamera) {
       this.inspectorData.data = this.sceneCamera;
+    } else if (type === InspectorType.Scene) {
+      this.inspectorData.data = this.engine.sceneManager.activeScene;
     }
   }
 

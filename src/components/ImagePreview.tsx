@@ -5,8 +5,6 @@ import { observer } from "mobx-react-lite";
 export const ImagePreview = observer(function () {
   const { imagePreviewStore } = useRootStore();
 
-  console.log(imagePreviewStore);
-
   return (
     <Image
       width={200}

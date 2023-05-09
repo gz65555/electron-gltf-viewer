@@ -1,10 +1,11 @@
 import { InspectorType } from "@/store/enum";
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
-import { BaseMaterial, Camera, Entity } from "oasis-engine";
+import { BaseMaterial, Camera, Entity, Scene } from "oasis-engine";
 import { CameraInspector } from "./tweakpane-inspector/Camera";
 import { EntityInspector } from "./tweakpane-inspector/Entity";
 import { MaterialInspector } from "./tweakpane-inspector/Material";
+import { SceneInspector } from "./tweakpane-inspector/Scene";
 
 export const Inspector = observer(function () {
   const {
@@ -17,8 +18,10 @@ export const Inspector = observer(function () {
     return <CameraInspector camera={data as Camera} />;
   }
   if (type === InspectorType.Material) {
-    // @ts-ignore
     return <MaterialInspector material={data as BaseMaterial} />;
+  }
+  if (type === InspectorType.Scene) {
+    return <SceneInspector scene={data as Scene}></SceneInspector>;
   }
   return null;
 });

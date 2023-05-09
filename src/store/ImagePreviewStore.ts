@@ -9,7 +9,6 @@ export class ImagePreviewStore {
 
   constructor() {
     makeAutoObservable(this);
-    console.log("constructor");
   }
 
   @action

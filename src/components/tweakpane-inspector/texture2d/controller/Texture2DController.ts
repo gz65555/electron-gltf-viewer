@@ -1,4 +1,9 @@
-import { Value, ValueController, ViewProps } from "@tweakpane/core";
+import {
+  Value,
+  BladeController,
+  ViewProps,
+  createBlade,
+} from "@tweakpane/core";
 import { Texture2D, WebGLEngine } from "oasis-engine";
 import { OnUploaded } from "../type";
 
@@ -12,28 +17,24 @@ interface Config {
   onPreview?: Function;
 }
 
-export class Texture2DController
-  implements ValueController<Texture2D, TextureNameView>
-{
+export class Texture2DController extends BladeController<TextureNameView> {
   public readonly value: Value<Texture2D>;
-  public readonly view: TextureNameView;
-  public readonly viewProps: ViewProps;
   public readonly engine: WebGLEngine;
   public readonly onUploaded: OnUploaded | undefined;
   public readonly onPreview: Function | undefined;
 
   constructor(doc: Document, config: Config) {
-    this.value = config.value;
-    this.viewProps = config.viewProps;
+    super({
+      view: new TextureNameView(doc, { name: config.value.rawValue.name }),
+      blade: createBlade(),
+      viewProps: config.viewProps,
+    });
     this.engine = config.engine;
     this.onUploaded = config.onUploaded;
     this.onPreview = config.onPreview;
 
     const value = config.value.rawValue;
     this.value = config.value;
-    this.view = new TextureNameView(doc, {
-      name: value.name,
-    });
 
     // @ts-ignore
     if (value.getPixelBuffer) {
