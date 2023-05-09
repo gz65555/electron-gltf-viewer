@@ -44,6 +44,7 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
       {
         view: "texture2d",
         engine: scene.engine,
+        label: "texture",
         value: scene.background.texture,
         onUploaded(texture) {
           scene.background.texture = texture;
@@ -83,7 +84,7 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
       onChangeVisibility();
     });
 
-    onChangeVisibility()
+    onChangeVisibility();
 
     // pane.addInput(scene, "farClipPlane", { label: "far", step: 0.25 });
     // const fovInput = pane.addInput(scene, "fieldOfView", {
