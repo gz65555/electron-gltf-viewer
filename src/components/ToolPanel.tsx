@@ -4,8 +4,8 @@ import FullscreenExitOutlined from "@ant-design/icons/FullscreenExitOutlined";
 import { observer } from "mobx-react-lite";
 import { FloatButton } from "./FloatButton";
 import VideoCameraOutlined from "@ant-design/icons/lib/icons/VideoCameraOutlined";
+import SettingOutlined from "@ant-design/icons/lib/icons/SettingOutlined";
 import { InspectorType } from "@/store/enum";
-import { AnimationPlayer } from "./AnimationPlayer";
 import { ObservedAnimationPlayer } from "./ObservedAnimationPlayer";
 
 const FullScreenButton = observer(function () {
@@ -38,21 +38,30 @@ const UIButtons = observer(function () {
       >
         <VideoCameraOutlined />
       </FloatButton>
+      <FloatButton
+        onClick={() => {
+          rootStore.toggleInspector(InspectorType.Scene);
+        }}
+        css={{ marginRight: 20 }}
+      >
+        <SettingOutlined />
+      </FloatButton>
     </>
   ) : null;
 });
 
-export const BottomPanel = observer(function () {
+export const ToolPanel = observer(function () {
   const { hasGlTF } = useRootStore();
   return hasGlTF ? (
     <>
       <div
         style={{
           position: "fixed",
-          bottom: "30px",
+          top: "30px",
           width: "90%",
           display: "flex",
           flexDirection: "row-reverse",
+          justifyContent: "center",
           left: "5%",
         }}
       >
@@ -66,7 +75,7 @@ export const BottomPanel = observer(function () {
           transform: "translateX(-50%)",
           left: "50%",
         }}
-      ></ObservedAnimationPlayer>
+      />
     </>
   ) : null;
 });

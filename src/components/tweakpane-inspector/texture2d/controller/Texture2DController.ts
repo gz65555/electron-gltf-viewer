@@ -1,39 +1,40 @@
-import { Value, ValueController, ViewProps } from "@tweakpane/core";
+import {
+  Value,
+  BladeController,
+  ViewProps,
+  createBlade,
+} from "@tweakpane/core";
 import { Texture2D, WebGLEngine } from "oasis-engine";
 import { OnUploaded } from "../type";
 
 import { Texture2DView as TextureNameView } from "../view/Texture2DView";
 
 interface Config {
-  value: Value<Texture2D>;
+  value: Texture2D;
   viewProps: ViewProps;
   engine: WebGLEngine;
   onUploaded?: OnUploaded;
   onPreview?: Function;
 }
 
-export class Texture2DController
-  implements ValueController<Texture2D, TextureNameView>
-{
-  public readonly value: Value<Texture2D>;
-  public readonly view: TextureNameView;
-  public readonly viewProps: ViewProps;
+export class Texture2DController extends BladeController<TextureNameView> {
+  public value: Texture2D;
   public readonly engine: WebGLEngine;
   public readonly onUploaded: OnUploaded | undefined;
   public readonly onPreview: Function | undefined;
 
   constructor(doc: Document, config: Config) {
-    this.value = config.value;
-    this.viewProps = config.viewProps;
+    super({
+      view: new TextureNameView(doc, { name: config.value.name }),
+      blade: createBlade(),
+      viewProps: config.viewProps,
+    });
     this.engine = config.engine;
     this.onUploaded = config.onUploaded;
     this.onPreview = config.onPreview;
 
-    const value = config.value.rawValue;
+    const value = config.value;
     this.value = config.value;
-    this.view = new TextureNameView(doc, {
-      name: value.name,
-    });
 
     // @ts-ignore
     if (value.getPixelBuffer) {
@@ -54,14 +55,14 @@ export class Texture2DController
         texture.setImageSource(imageBitmap);
         texture.name = file.name;
         texture.generateMipmaps();
-        this.value.setRawValue(texture);
+        this.value = texture;
         this.putTexture2DToCanvas(texture);
         this.onUploaded && this.onUploaded(texture);
       });
     });
 
     this.view.textElem.addEventListener("click", () => {
-      if (this.value.rawValue instanceof Texture2D) {
+      if (this.value instanceof Texture2D) {
         this.onPreview && this.onPreview(this.view.ctx);
       }
     });
