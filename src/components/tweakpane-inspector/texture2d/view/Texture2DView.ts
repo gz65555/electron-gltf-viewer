@@ -1,4 +1,4 @@
-import { ClassName, NumberTextView, TextView, View } from "@tweakpane/core";
+import { ClassName, View } from "@tweakpane/core";
 
 interface Config {
   name: string;

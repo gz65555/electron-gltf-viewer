@@ -1,12 +1,8 @@
-import { useControls, Leva, folder } from "leva";
 import { Entity } from "oasis-engine";
 import { useEffect } from "react";
 import { Pane } from "tweakpane";
 export function EntityInspector(props: { entity: Entity }) {
   const { entity } = props;
-  const {
-    transform: { position, rotation, scale },
-  } = entity;
 
   useEffect(() => {
     const pane = new Pane();
