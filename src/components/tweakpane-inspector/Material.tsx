@@ -172,23 +172,19 @@ function addTextureInput(
   folders: Record<string, FolderApi>,
   options: { label: string; folder: MaterialPropertyGroup }
 ) {
-  folders[options.folder].addInput(
-    {
-      [options.label]: material.shaderData,
+  folders[options.folder].addBlade({
+    view: "texture2d",
+    engine: material.engine,
+    label: options.label,
+    value: material.shaderData.getTexture(uniformProperty),
+    onUploaded(texture) {
+      material.shaderData.setTexture(uniformProperty, texture);
     },
-    options.label,
-    {
-      view: "input-texture2d",
-      engine: material.engine,
-      key: uniformProperty,
-      onUploaded(texture) {
-        material.shaderData.setTexture(uniformProperty, texture);
-      },
-      onPreview(ctx: CanvasRenderingContext2D) {
-        rootStore.imagePreviewStore.show(ctx);
-      },
-    }
-  );
+    onPreview(ctx: CanvasRenderingContext2D) {
+      console.log("preview");
+      rootStore.imagePreviewStore.show(ctx);
+    },
+  });
 }
 
 function setMaterialShader(
@@ -290,7 +286,6 @@ export function MaterialInspector(props: { material: BaseMaterial }) {
       shaderValues[uniformProperty] = value ?? options.defaultValue;
 
       if (folders[options.folder]) {
-        console.log(uniformProperty, options);
         folders[options.folder].addInput(
           shaderValues,
           uniformProperty,

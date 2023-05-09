@@ -10,7 +10,7 @@ import { OnUploaded } from "../type";
 import { Texture2DView as TextureNameView } from "../view/Texture2DView";
 
 interface Config {
-  value: Texture2D;
+  value: Value<Texture2D>;
   viewProps: ViewProps;
   engine: WebGLEngine;
   onUploaded?: OnUploaded;
@@ -18,14 +18,14 @@ interface Config {
 }
 
 export class Texture2DController extends BladeController<TextureNameView> {
-  public value: Texture2D;
+  public readonly value: Value<Texture2D>;
   public readonly engine: WebGLEngine;
   public readonly onUploaded: OnUploaded | undefined;
   public readonly onPreview: Function | undefined;
 
   constructor(doc: Document, config: Config) {
     super({
-      view: new TextureNameView(doc, { name: config.value.name }),
+      view: new TextureNameView(doc, { name: config.value.rawValue.name }),
       blade: createBlade(),
       viewProps: config.viewProps,
     });
@@ -33,7 +33,7 @@ export class Texture2DController extends BladeController<TextureNameView> {
     this.onUploaded = config.onUploaded;
     this.onPreview = config.onPreview;
 
-    const value = config.value;
+    const value = config.value.rawValue;
     this.value = config.value;
 
     // @ts-ignore
@@ -55,14 +55,14 @@ export class Texture2DController extends BladeController<TextureNameView> {
         texture.setImageSource(imageBitmap);
         texture.name = file.name;
         texture.generateMipmaps();
-        this.value = texture;
+        this.value.setRawValue(texture);
         this.putTexture2DToCanvas(texture);
         this.onUploaded && this.onUploaded(texture);
       });
     });
 
     this.view.textElem.addEventListener("click", () => {
-      if (this.value instanceof Texture2D) {
+      if (this.value.rawValue instanceof Texture2D) {
         this.onPreview && this.onPreview(this.view.ctx);
       }
     });
