@@ -12,7 +12,6 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
     const pane = new Pane();
     pane.title = "Scene";
 
-
     pane.registerPlugin(TexturePlugin);
 
     const backgroundFolder = pane.addFolder({
@@ -40,7 +39,6 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
     );
 
     const backgroundTextureInput = backgroundFolder.addBlade(
-      // { texture: scene.background },
       {
         view: "texture2d",
         engine: scene.engine,
@@ -86,21 +84,6 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
 
     onChangeVisibility();
 
-    // pane.addInput(scene, "farClipPlane", { label: "far", step: 0.25 });
-    // const fovInput = pane.addInput(scene, "fieldOfView", {
-    //   min: 0.1,
-    //   max: 180,
-    //   step: 1,
-    //   label: "fov",
-    // });
-    // const orthoSizeInput = pane.addInput(scene, "orthographicSize", {
-    //   label: "orthoSize",
-    // });
-
-    // pane.on("change", () => {
-    //   fovInput.hidden = scene.isOrthographic;
-    //   orthoSizeInput.hidden = !scene.isOrthographic;
-    // });
     return () => {
       pane.dispose();
     };
