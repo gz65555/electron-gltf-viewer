@@ -1,4 +1,4 @@
-import { Document, NodeIO } from "@gltf-transform/core";
+import { NodeIO } from "@gltf-transform/core";
 import { dedup, center, weld } from "@gltf-transform/functions";
 import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
 import fetch from "node-fetch";

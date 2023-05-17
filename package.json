@@ -44,6 +44,7 @@
     "node-fetch": "^3.3.0",
     "oasis-engine": "beta",
     "oasis-engine-toolkit": "beta",
+    "react-json-view": "^1.21.3",
     "simple-dropzone": "^0.8.1",
     "tweakpane": "^3.1.1"
   },

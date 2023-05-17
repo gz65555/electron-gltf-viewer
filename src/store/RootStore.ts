@@ -1,11 +1,13 @@
 import { TreeDataNode } from "antd";
 import { action, computed, makeObservable, observable } from "mobx";
 import {
+  AssetType,
   Camera,
   Entity,
   GLTFResource,
   Material,
   Scene,
+  TextureCube,
   WebGLEngine,
 } from "oasis-engine";
 import { createContext, useContext } from "react";
@@ -14,6 +16,11 @@ import { validateBytes } from "gltf-validator";
 import { InspectorType } from "./enum";
 import { AnimationStore } from "./AnimationStore";
 import { ImagePreviewStore } from "./ImagePreviewStore";
+import { GlTFTransformStore } from "./GlTFTransformStore";
+
+const hdrList = [
+  { url: "/hdr/puresky.hdr", type: AssetType.HDR, label: "PureSky" },
+];
 
 export class RootStore {
   @observable
@@ -61,8 +68,11 @@ export class RootStore {
     data: null,
   };
 
+  gltfTransformStore: GlTFTransformStore;
   animationStore = new AnimationStore();
   imagePreviewStore = new ImagePreviewStore();
+  hdrSelection: Array<{ label: string; value: string; rawValue: TextureCube }> =
+    [];
 
   /** from glTF validator */
   glTFData: {
@@ -135,6 +145,7 @@ export class RootStore {
     this.sceneCamera = this.engine.sceneManager.activeScene
       .findEntityByName("scene-camera")
       .getComponent(Camera);
+
     const entities = this.entities;
     function recursiveEntities(entity: Entity, childrenData: TreeDataNode[]) {
       entities.set(entity.instanceId + "", entity);
@@ -161,6 +172,19 @@ export class RootStore {
     this.hasGlTF = true;
     this.animationStore.init(asset.animations, asset.defaultSceneRoot);
     this.glTFData = await validateBytes(bytes);
+
+    this.gltfTransformStore = await GlTFTransformStore.create(bytes);
+    await this.engine.resourceManager
+      .load<TextureCube[]>(hdrList as any)
+      .then((hdrs) => {
+        hdrs.forEach((hdr, index) => {
+          this.hdrSelection[index] = {
+            label: hdrList[index].label,
+            value: hdrList[index].label,
+            rawValue: hdr,
+          };
+        });
+      });
   }
 
   @action
