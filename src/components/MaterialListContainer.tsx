@@ -1,7 +1,7 @@
 import { InspectorType } from "@/store/enum";
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
-import { Material } from "oasis-engine";
+import { Material } from "@galacean/engine";
 import React from "react";
 import { AssetContainer, AssetName } from "./Panel/AssetContainer";
 import { ListItemContainer } from "./Panel/ListItemContainer";

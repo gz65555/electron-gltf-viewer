@@ -5,11 +5,11 @@ import {
   Script,
   Transform,
   Vector3,
-} from "oasis-engine";
+} from "@galacean/engine";
 import { ControlHandlerType } from "./enums/ControlHandlerType";
 import { Spherical } from "./Spherical";
-import { Entity } from "oasis-engine";
-import { Vector2 } from "oasis-engine";
+import { Entity } from "@galacean/engine";
+import { Vector2 } from "@galacean/engine";
 
 /**
  * The camera's track controller, can rotate, zoom, pan, support mouse and touch events.

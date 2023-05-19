@@ -4,7 +4,7 @@ import {
   ViewProps,
   createBlade,
 } from "@tweakpane/core";
-import { Texture2D, WebGLEngine } from "oasis-engine";
+import { Texture2D, WebGLEngine } from "@galacean/engine";
 import { OnUploaded } from "../type";
 
 import { Texture2DView as TextureNameView } from "../view/Texture2DView";

@@ -1,5 +1,5 @@
 import { BaseInputParams } from "@tweakpane/core";
-import { Texture2D, WebGLEngine } from "oasis-engine";
+import { Texture2D, WebGLEngine } from "@galacean/engine";
 
 export interface Texture2DInputParams extends BaseInputParams {
   view: "input-texture2d";

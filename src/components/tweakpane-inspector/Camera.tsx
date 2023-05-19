@@ -1,4 +1,4 @@
-import { Camera } from "oasis-engine";
+import { Camera } from "@galacean/engine";
 import { useEffect } from "react";
 import { Pane } from "tweakpane";
 

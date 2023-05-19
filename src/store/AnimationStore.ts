@@ -1,4 +1,4 @@
-import { AnimationClip, Entity, Script } from "oasis-engine";
+import { AnimationClip, Entity, Script } from "@galacean/engine";
 import { action, makeObservable, observable } from "mobx";
 
 export class AnimationStore {

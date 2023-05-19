@@ -20,7 +20,7 @@ import {
   Texture2D,
   Vector3,
   WebGLEngine,
-} from "oasis-engine";
+} from "@galacean/engine";
 import { useEffect } from "react";
 import "./gltf-viewer.less";
 import { SimpleDropzone } from "simple-dropzone";

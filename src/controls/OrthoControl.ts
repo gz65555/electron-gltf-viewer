@@ -1,4 +1,4 @@
-import { Camera, Canvas, Entity, InputManager, Script, Transform, Vector3 } from "oasis-engine";
+import { Camera, Canvas, Entity, InputManager, Script, Transform, Vector3 } from "@galacean/engine";
 import { ControlHandlerType } from "./enums/ControlHandlerType";
 import { IControlInput } from "./inputDevice/IControlInput";
 import { ControlKeyboard } from "./inputDevice/ControlKeyboard";
@@ -168,7 +168,7 @@ export class OrthoControl extends Script {
     const sizeDiff = this._zoomScaleUnit * (this._scale - 1);
     const size = camera.orthographicSize + sizeDiff;
     camera.orthographicSize = Math.max(this.minZoom, Math.min(this.maxZoom, size));
-    
+
     // Update X and Y
     const { width, height } = this.canvas;
     const { x, y } = _panOffset;
@@ -180,7 +180,7 @@ export class OrthoControl extends Script {
     curPosition.x = cameraPosition.x - (x * width3D) / width;
     curPosition.y = cameraPosition.y + (y * height3D) / height;
     curPosition.z = cameraPosition.z;
-    
+
     // Update camera transform
     cameraTransform.position = curPosition;
     /** Reset cache value. */

@@ -1,4 +1,4 @@
-import { Entity } from "oasis-engine";
+import { Entity } from "@galacean/engine";
 import { useEffect } from "react";
 import { Pane } from "tweakpane";
 export function EntityInspector(props: { entity: Entity }) {

@@ -1,7 +1,7 @@
 import { jsonViewerStore } from "@/store/JSONViewerStore";
 import { rootStore } from "@/store/RootStore";
-import * as oasisEngine from "oasis-engine";
-import { BackgroundMode, Color, BackgroundTextureFillMode } from "oasis-engine";
+import * as oasisEngine from "@galacean/engine";
+import { BackgroundMode, Color, BackgroundTextureFillMode } from "@galacean/engine";
 import { useEffect } from "react";
 import { ListApi, Pane } from "tweakpane";
 import { JSONViewerModal } from "../JSONViewerModal";

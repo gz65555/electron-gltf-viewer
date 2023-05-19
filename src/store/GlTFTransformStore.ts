@@ -20,6 +20,9 @@ export class GlTFTransformStore {
 
   public async init(info: Uint8Array) {
     this._doc = await io.readBinary(info);
+    const accessors = this._doc.getRoot().listAccessors();
+    const meshes = this._doc.getRoot().listMeshes();
+    console.log(meshes);
   }
 
   public async generateJSON() {

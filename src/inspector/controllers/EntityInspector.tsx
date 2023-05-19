@@ -1,6 +1,6 @@
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
-import { Entity } from "oasis-engine";
+import { Entity } from "@galacean/engine";
 import { Group } from "../components/Group";
 import { InputVector3, Vector3Store } from "../components/InputVector3";
 

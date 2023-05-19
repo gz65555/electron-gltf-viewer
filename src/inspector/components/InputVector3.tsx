@@ -1,7 +1,7 @@
 import { Input, InputNumber } from "antd";
 import { makeAutoObservable } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Vector3 } from "oasis-engine";
+import { Vector3 } from "@galacean/engine";
 
 export class Vector3Store {
   x: string = "0";

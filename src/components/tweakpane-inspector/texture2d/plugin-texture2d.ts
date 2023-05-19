@@ -15,7 +15,7 @@ import {
 import { Texture2DController } from "./controller/Texture2DController";
 import "./sass/plugin.scss";
 import { OnUploaded, Texture2DInputParams } from "./type";
-import type { Texture2D, WebGLEngine } from "oasis-engine";
+import type { Texture2D, WebGLEngine } from "@galacean/engine";
 
 export interface Texture2DBladeParams extends BaseBladeParams {
   value: Texture2D;

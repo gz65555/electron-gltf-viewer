@@ -4,7 +4,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import electron from "vite-electron-plugin";
 import { esmodule } from "vite-electron-plugin/plugin";
-import { loadViteEnv } from 'vite-electron-plugin/plugin'
+import { loadViteEnv } from "vite-electron-plugin/plugin";
 
 import electronPath from "electron";
 import { spawn } from "child_process";
@@ -16,12 +16,11 @@ rmSync(path.join(__dirname, "dist"), { recursive: true, force: true }); // v14.1
 export default defineConfig({
   optimizeDeps: {
     exclude: [
-      "oasis-engine",
-      "@oasis-engine/core",
-      "@oasis-engine/math",
-      "@oasis-engine/loader",
-      "@oasis-engine/rhi-webgl",
-      "@oasis-engine-toolkit/controls",
+      "@galacean/engine",
+      "@galacean/engine-core",
+      "@galacean/engine-math",
+      "@galacean/engine-loader",
+      "@galacean/engine-rhi-webgl",
     ],
   },
   resolve: {

@@ -9,7 +9,7 @@ import {
   Scene,
   TextureCube,
   WebGLEngine,
-} from "oasis-engine";
+} from "@galacean/engine";
 import { createContext, useContext } from "react";
 import { EntityStore } from "./EntityStore";
 import { validateBytes } from "gltf-validator";

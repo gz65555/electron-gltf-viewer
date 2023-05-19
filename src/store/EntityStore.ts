@@ -1,6 +1,6 @@
 import { Vector3Store } from "@/inspector/components/InputVector3";
 import { makeObservable } from "mobx";
-import { Entity } from "oasis-engine";
+import { Entity } from "@galacean/engine";
 
 export class EntityStore {
   rotation: Vector3Store = new Vector3Store();

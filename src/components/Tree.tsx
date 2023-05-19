@@ -5,7 +5,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MUITreeItem from "@mui/lab/TreeItem";
 import { styled } from "../theme/stitches.config";
 import { useRootStore } from "@/store/RootStore";
-import { Camera, Entity, Light } from "oasis-engine";
+import { Camera, Entity, Light } from "@galacean/engine";
 import { observer } from "mobx-react-lite";
 import { IconFont } from "./CustomIcon";
 

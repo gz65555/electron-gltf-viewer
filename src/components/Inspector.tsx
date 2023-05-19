@@ -1,7 +1,7 @@
 import { InspectorType } from "@/store/enum";
 import { useRootStore } from "@/store/RootStore";
 import { observer } from "mobx-react-lite";
-import { BaseMaterial, Camera, Entity, Scene } from "oasis-engine";
+import { BaseMaterial, Camera, Entity, Scene } from "@galacean/engine";
 import { CameraInspector } from "./tweakpane-inspector/Camera";
 import { EntityInspector } from "./tweakpane-inspector/Entity";
 import { MaterialInspector } from "./tweakpane-inspector/Material";

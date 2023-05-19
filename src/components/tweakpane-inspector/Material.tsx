@@ -6,7 +6,7 @@ import {
   Shader,
   Vector2,
   Vector4,
-} from "oasis-engine";
+} from "@galacean/engine";
 import { useEffect } from "react";
 import { FolderApi, Pane } from "tweakpane";
 
