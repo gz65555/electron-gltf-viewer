@@ -1,9 +1,18 @@
-import { NodeIO } from "@gltf-transform/core";
-import { dedup, center, weld } from "@gltf-transform/functions";
+import { NodeIO, Document } from "@gltf-transform/core";
+import {
+  dedup,
+  center,
+  weld,
+  unweld,
+  tangents,
+} from "@gltf-transform/functions";
 import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
+import { generateTangents } from "mikktspace";
 import fetch from "node-fetch";
 import draco3d from "draco3dgltf";
 import { BrowserWindow } from "electron";
+
+export let contextDocument: Document | undefined = undefined;
 
 export async function openFile(win: BrowserWindow, filepath: string) {
   // 如果是第一次打开，返回 false
@@ -15,8 +24,8 @@ export async function openFile(win: BrowserWindow, filepath: string) {
   return true;
 }
 
-let _io;
-async function getIO() {
+let _io: NodeIO;
+export async function getIO() {
   if (!_io) {
     _io = new NodeIO(fetch)
       .setAllowHTTP(true)
@@ -35,7 +44,15 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
     try {
       const io = await getIO();
       const doc = await io.read(modelPath);
-      await doc.transform(weld(), dedup(), center({ pivot: "center" }));
+      contextDocument = doc;
+      await doc.transform(
+        unweld(),
+        tangents({ generateTangents, overwrite: true }),
+        weld(),
+        dedup(),
+        center({ pivot: "center" })
+      );
+
       const glb = await io.writeBinary(doc);
       resolve(Buffer.from(glb.buffer));
     } catch (e) {

@@ -1,6 +1,8 @@
 import { app, BrowserWindow, dialog, Menu } from "electron";
-import { openFile, readModelFile } from "./gltf/reader";
+import { contextDocument, getIO, openFile, readModelFile } from "./gltf/reader";
 import { preferences } from "./preference/preference";
+import fs from "fs-extra";
+import path from "path";
 
 export function createMenu() {
   return Menu.buildFromTemplate([
@@ -49,6 +51,31 @@ export function createMenu() {
               .catch(function (err) {
                 console.error(err);
               });
+          },
+        },
+        {
+          label: "Export GlB",
+          accelerator: "CmdOrCtrl+E",
+          async click() {
+            if (contextDocument) {
+              const result = await dialog.showSaveDialog(
+                BrowserWindow.getFocusedWindow(),
+                {
+                  title: "Download to File…",
+                  filters: [{ name: "All Files", extensions: [".glb"] }],
+                }
+              );
+              if (!result.canceled) {
+                const filepath = result.filePath!;
+                const io = await getIO();
+                const buffer = await io.writeBinary(contextDocument);
+                await fs.writeFile(filepath, buffer);
+              }
+            } else {
+              dialog.showMessageBox(BrowserWindow.getFocusedWindow(), {
+                message: "Open a gltf/glb First",
+              });
+            }
           },
         },
       ],

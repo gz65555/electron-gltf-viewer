@@ -29,7 +29,7 @@ import { useRootStore } from "./store/RootStore";
 import { IGlTF } from "./types/IGlTF";
 import { OrbitControl } from "./controls";
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = window.require("electron");
 
 const envList = {
   sunset:
@@ -138,8 +138,12 @@ class Oasis extends EventEmitter {
         .load<GLTFResource>({
           type: AssetType.Prefab,
           url: `${url}#.glb`,
+          params: {
+            keepMeshData: true,
+          },
         })
         .then((asset) => {
+          console.log(asset.meshes);
           this.handleGlTFResource(asset, buffer);
         })
         .catch(() => {
