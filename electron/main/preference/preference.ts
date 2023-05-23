@@ -34,7 +34,7 @@ export const preferences = new ElectronPreferences({
       form: {
         groups: [
           {
-            label: "FBX Import", // optional
+            label: "Import Options", // optional
             fields: [
               {
                 label: "Animation Framerate",
@@ -79,17 +79,6 @@ export const preferences = new ElectronPreferences({
     // ...
   ],
 });
-
-// // Show the preferences window on demand.
-// preferences.show();
-// //or show a specific section by its ID
-// preferences.show("about");
-
-// Get a value from the preferences data store
-const name = preferences.value("about.name");
-
-// Save a value within the preferences data store
-preferences.value("about.name", "Einstein");
 
 // Subscribing to preference changes.
 preferences.on("save", (preferences) => {
