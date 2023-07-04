@@ -3,11 +3,11 @@ import { PanelItemLabel } from "../Panel/PanelItemLabel";
 import { validateBytes } from "gltf-validator";
 import { useRootStore } from "@/store/RootStore";
 import { useState } from "react";
+import { observer } from "mobx-react-lite";
 
-export function BasicInfo() {
-  const {
-    glTFData: { info },
-  } = useRootStore();
+export const BasicInfo = observer(() => {
+  const { glTFData, gltfSize } = useRootStore();
+  const { info } = glTFData;
   return (
     <>
       <PanelItemContainer>
@@ -23,13 +23,17 @@ export function BasicInfo() {
         </PanelItemLabel>
       </PanelItemContainer>
       <PanelItemContainer>
-        <PanelItemLabel css={{ maxWidth: 160 }}>
-          {"vertices"}
-        </PanelItemLabel>
+        <PanelItemLabel css={{ maxWidth: 160 }}>{"vertices"}</PanelItemLabel>
         <PanelItemLabel css={{ maxWidth: 160 }}>
           {info.totalVertexCount}
         </PanelItemLabel>
       </PanelItemContainer>
+      <PanelItemContainer>
+        <PanelItemLabel css={{ maxWidth: 160 }}>{"size"}</PanelItemLabel>
+        <PanelItemLabel css={{ maxWidth: 160 }}>
+          {gltfSize.toFixed(2)}
+        </PanelItemLabel>
+      </PanelItemContainer>
     </>
   );
-}
+});

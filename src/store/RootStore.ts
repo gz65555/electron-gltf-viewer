@@ -2,12 +2,15 @@ import { TreeDataNode } from "antd";
 import { action, computed, makeObservable, observable } from "mobx";
 import {
   AssetType,
+  BoundingBox,
   Camera,
   Entity,
   GLTFResource,
   Material,
+  Renderer,
   Scene,
   TextureCube,
+  Vector3,
   WebGLEngine,
 } from "@galacean/engine";
 import { createContext, useContext } from "react";
@@ -56,6 +59,8 @@ export class RootStore {
 
   glTFResource: GLTFResource;
 
+  gltfSize: number = 0;
+
   @observable
   glTFId: number = -1;
 
@@ -75,6 +80,7 @@ export class RootStore {
     [];
 
   /** from glTF validator */
+  @observable
   glTFData: {
     info: {
       extensionUsed: string[];
@@ -172,6 +178,7 @@ export class RootStore {
     this.hasGlTF = true;
     this.animationStore.init(asset.animations, asset.defaultSceneRoot);
     this.glTFData = await validateBytes(bytes);
+    this.gltfSize = calculateSize(asset.defaultSceneRoot);
 
     this.gltfTransformStore = await GlTFTransformStore.create(bytes);
     await this.engine.resourceManager
@@ -214,6 +221,31 @@ export class RootStore {
     }
     return expands;
   }
+}
+
+const boundingBox = new BoundingBox();
+function calculateSize(entity: Entity) {
+  boundingBox.min.set(
+    Number.POSITIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
+    Number.POSITIVE_INFINITY
+  );
+  boundingBox.max.set(
+    Number.NEGATIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    Number.NEGATIVE_INFINITY
+  );
+
+  const renderers = entity.getComponentsIncludeChildren(Renderer, []);
+  renderers.forEach((renderer, i) => {
+    if (renderer.entity.isActive) {
+      renderer.update(0);
+      BoundingBox.merge(renderer.bounds, boundingBox, boundingBox);
+    }
+  });
+  const extent = new Vector3();
+  boundingBox.getExtent(extent);
+  return extent.length();
 }
 
 export const rootStore = new RootStore();
