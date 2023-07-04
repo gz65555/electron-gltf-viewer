@@ -8,11 +8,16 @@ import {
 } from "@gltf-transform/functions";
 import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
 import { generateTangents } from "mikktspace";
+import path from "path";
 import fetch from "node-fetch";
 import draco3d from "draco3dgltf";
 import { BrowserWindow } from "electron";
+import convert from "fbx2gltf";
+import fs from "fs-extra";
 
 export let contextDocument: Document | undefined = undefined;
+
+const CONVERTED_GLB_PATH = path.join(process.cwd(), "temp/temp.glb");
 
 export async function openFile(win: BrowserWindow, filepath: string) {
   // 如果是第一次打开，返回 false
@@ -42,6 +47,10 @@ export async function getIO() {
 export function readModelFile(modelPath: string): Promise<Buffer> {
   return new Promise(async (resolve, reject) => {
     try {
+      if (modelPath.endsWith(".fbx")) {
+        await fs.ensureDir(path.dirname(CONVERTED_GLB_PATH));
+        modelPath = await convertFBX2GlTF(modelPath, CONVERTED_GLB_PATH);
+      }
       const io = await getIO();
       const doc = await io.read(modelPath);
       contextDocument = doc;
@@ -58,6 +67,22 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
     } catch (e) {
       console.log(e);
     }
+  });
+}
+
+export function convertFBX2GlTF(
+  fromPath: string,
+  destPath: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    convert(fromPath, destPath, ["-b"]).then(
+      (destPath) => {
+        resolve(destPath);
+      },
+      (error) => {
+        reject(error);
+      }
+    );
   });
 }
 
