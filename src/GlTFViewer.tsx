@@ -143,7 +143,6 @@ class Oasis extends EventEmitter {
           },
         })
         .then((asset) => {
-          console.log(asset.meshes);
           this.handleGlTFResource(asset, buffer);
         })
         .catch(() => {
@@ -253,24 +252,11 @@ class Oasis extends EventEmitter {
         mainFile = file;
         return true;
       }
-
       return false;
     });
 
-    fileArray.forEach((f) => {
-      const file = f[1];
-      if (!modelReg.test(file.name)) {
-        const url = URL.createObjectURL(file);
-        const fileName = file.name;
-        filesMap[fileName] = url;
-      }
-    });
-
     if (mainFile) {
-      mainFile.arrayBuffer().then((buffer) => {
-        const url = URL.createObjectURL(mainFile);
-        this.loadModel(url, filesMap, type as any, new Uint8Array(buffer));
-      });
+      ipcRenderer.send("drop-file", mainFile.path);
     }
   }
 

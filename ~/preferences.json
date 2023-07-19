@@ -5,6 +5,7 @@
     "assets": {
         "animFrame": 24,
         "computeNormals": "never",
+        "computeTangents": "overwrite",
         "blendShape": [],
         "foods": []
     }

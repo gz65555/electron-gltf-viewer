@@ -24,7 +24,6 @@ process.env.PUBLIC = app.isPackaged
 let win: BrowserWindow | null = null;
 // Here, you can also use other preload
 const preload = path.join(__dirname, "../preload/index.js");
-const url = process.env.VITE_DEV_SERVER_URL;
 
 app.on("will-finish-launching", () => {
   app.on("open-file", async (event, modelPath: string) => {
@@ -86,6 +85,19 @@ async function createWindow(modelPath: string = null) {
 app.whenReady().then(() => {
   if (BrowserWindow.getAllWindows().length <= 0) {
     createWindow(openedFile);
+
+    ipcMain.on("drop-file", async (event, modelPath: string) => {
+      // 添加到最近访问
+      app.addRecentDocument(modelPath);
+      const success = await openFile(win, modelPath);
+      if (!success) {
+        if (app.isReady()) {
+          createWindow(modelPath);
+        } else {
+          openedFile = modelPath;
+        }
+      }
+    });
   }
 });
 
