@@ -1,6 +1,6 @@
 # electron-gltf-viewer
 
-Preview glTF files using Galacean.  Support fbx file use [fbx2gltf]().
+Preview glTF files using [Galacean](https://github.com/galacean/engine). Support fbx file use [fbx2gltf](https://github.com/facebookincubator/FBX2glTF).
 
 English | [简体中文](README.zh-CN.md)
 
