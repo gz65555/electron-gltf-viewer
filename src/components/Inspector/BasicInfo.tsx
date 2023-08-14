@@ -1,8 +1,6 @@
 import { PanelItemContainer } from "../Panel/PanelItemContainer";
 import { PanelItemLabel } from "../Panel/PanelItemLabel";
-import { validateBytes } from "gltf-validator";
 import { useRootStore } from "@/store/RootStore";
-import { useState } from "react";
 import { observer } from "mobx-react-lite";
 
 export const BasicInfo = observer(() => {
