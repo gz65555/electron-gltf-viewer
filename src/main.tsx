@@ -11,6 +11,7 @@ import "@fontsource/roboto/700.css";
 import { UIContainer } from "./components/UIContainer";
 import { ImagePreview } from "./components/ImagePreview";
 import { JSONViewerModal } from "./components/JSONViewerModal";
+import { ExportModal } from "./components/ExportModal";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <div>
@@ -19,7 +20,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <GlTFView />
       <UIContainer />
       <ImagePreview />
-      <JSONViewerModal></JSONViewerModal>
+      <JSONViewerModal />
+      <ExportModal />
     </RootContext.Provider>
   </div>
 );
