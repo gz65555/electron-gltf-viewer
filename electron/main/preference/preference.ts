@@ -1,5 +1,17 @@
-const ElectronPreferences = require("electron-preferences");
-// import ElectronPreferences from 'electron-preferences'; // ...or if you prefer to use module imports
+import fs from "fs-extra";
+import path from "path";
+import ElectronPreferences from "electron-preferences"; // ...or if you prefer to use module imports
+
+const preferencePath = path.join(__dirname, "config", "preference.json");
+fs.ensureFileSync(preferencePath);
+const preference = fs.readJSONSync(preferencePath, { throws: false }) ?? {
+  assets: {
+    animFrame: 24,
+    computeNormals: "never",
+    computeTangents: "never",
+    blendShape: [],
+  },
+};
 
 export const preferences = new ElectronPreferences({
   // Override default preference BrowserWindow values
@@ -17,13 +29,7 @@ export const preferences = new ElectronPreferences({
   dataStore: "~/preferences.json", // defaults to <userData>/preferences.json
 
   // Preference default values
-  defaults: {
-    assets: {
-      animFrame: 24,
-      computeNormals: "never",
-      blendShape: [],
-    },
-  },
+  defaults: preference,
 
   // Preference sections visible to the UI
   sections: [
@@ -57,7 +63,18 @@ export const preferences = new ElectronPreferences({
                   { label: "missing", value: "missing" },
                   { label: "always", value: "always" },
                 ],
-                help: "Select baked animation framerate.",
+                help: "Compute Normals Option.",
+              },
+              {
+                label: "Compute Tangents",
+                key: "computeTangents",
+                type: "dropdown",
+                options: [
+                  { label: "never", value: "never" },
+                  { label: "missing", value: "missing" },
+                  { label: "overwrite", value: "overwrite" },
+                ],
+                help: "Compute Tangents Option.",
               },
               {
                 label: "Blend Shape",
@@ -81,8 +98,9 @@ export const preferences = new ElectronPreferences({
 });
 
 // Subscribing to preference changes.
-preferences.on("save", (preferences) => {
+preferences.on("save", (preferencesObject) => {
   console.log(`Preferences were saved.`, JSON.stringify(preferences, null, 4));
+  fs.writeJson(preferencePath, preferencesObject);
 });
 
 // Using a button field with `channel: 'reset'`

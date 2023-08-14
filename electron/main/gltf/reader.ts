@@ -1,4 +1,4 @@
-import { NodeIO, Document } from "@gltf-transform/core";
+import { NodeIO, Document, Transform } from "@gltf-transform/core";
 import {
   dedup,
   center,
@@ -14,6 +14,7 @@ import draco3d from "draco3dgltf";
 import { BrowserWindow } from "electron";
 import convert from "fbx2gltf";
 import fs from "fs-extra";
+import { preferences } from "../preference/preference";
 
 export let contextDocument: Document | undefined = undefined;
 
@@ -54,13 +55,21 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
       const io = await getIO();
       const doc = await io.read(modelPath);
       contextDocument = doc;
-      await doc.transform(
-        unweld(),
-        tangents({ generateTangents, overwrite: true }),
-        weld(),
-        dedup(),
-        center({ pivot: "center" })
-      );
+
+      const computeTangentsOption = preferences.value("assets.computeTangents");
+      const transformPipeline: Transform[] = [];
+      if (computeTangentsOption !== "never") {
+        const overwrite = computeTangentsOption === "overwrite" ? true : false;
+        transformPipeline.push(
+          unweld(),
+          tangents({ generateTangents, overwrite }),
+          weld()
+        );
+      }
+
+      transformPipeline.push(dedup(), center({ pivot: "center" }));
+
+      await doc.transform(...transformPipeline);
 
       const glb = await io.writeBinary(doc);
       resolve(Buffer.from(glb.buffer));
@@ -85,6 +94,7 @@ export function convertFBX2GlTF(
     );
   });
 }
+export function readModelFromWeb(fileMap: Record<string, File>) {}
 
 export function transformGlTFToGlB(buffer: Buffer) {
   try {
