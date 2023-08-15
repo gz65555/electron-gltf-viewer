@@ -1,11 +1,20 @@
 import { action, makeObservable, observable } from "mobx";
+const { ipcRenderer } = window.require("electron");
 
 class ExportStore {
   @observable
-  isModalOpen = true;
+  isModalOpen = false;
 
   constructor() {
     makeObservable(this);
+    ipcRenderer.on("export-glb", () => {
+      this.isModalOpen = true;
+    });
+  }
+
+  export(options) {
+    ipcRenderer.send("export-glb", options);
+    this.isModalOpen = false;
   }
 
   @action

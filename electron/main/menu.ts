@@ -1,10 +1,64 @@
-import { app, BrowserWindow, dialog, Menu } from "electron";
-import { contextDocument, getIO, openFile, readModelFile } from "./gltf/reader";
+import { app, BrowserWindow, dialog, ipcMain, Menu } from "electron";
+import {
+  contextDocument,
+  contextFilename,
+  getIO,
+  openFile,
+  readModelFile,
+} from "./gltf/reader";
 import { preferences } from "./preference/preference";
 import fs from "fs-extra";
 import path from "path";
+import { Notification } from "electron";
 
 export function createMenu() {
+  ipcMain.on("export-glb", async (e, params) => {
+    const isGlTF = params.type === "glTF";
+    const result = await dialog.showSaveDialog(
+      BrowserWindow.getFocusedWindow(),
+      {
+        title: "Export to File…",
+        defaultPath: `*/${contextFilename}`,
+        filters: [
+          { name: "All Files", extensions: [isGlTF ? ".gltf" : ".glb"] },
+        ],
+      }
+    );
+    if (!result.canceled) {
+      const filepath = result.filePath!;
+      const dirname = path.dirname(filepath);
+      const filename = path.basename(filepath);
+      const io = await getIO();
+      if (!isGlTF) {
+        const buffer = await io.writeBinary(contextDocument);
+        await fs.writeFile(filepath, buffer);
+      } else {
+        const data = await io.writeJSON(contextDocument);
+        const { json, resources } = data;
+        const promises = [];
+        for (let uri in resources) {
+          const name = path.basename(uri);
+          if (json.buffers) {
+            const item = json.buffers.find((item) => item.uri === uri);
+            if (item) item.uri = name;
+          }
+          if (json.images) {
+            const item = json.images.find((item) => item.uri === uri);
+            if (item) item.uri = name;
+          }
+          promises.push(fs.writeFile(path.join(dirname, name), resources[uri]));
+        }
+        promises.push(fs.writeFile(filepath, JSON.stringify(json)));
+        await Promise.all(promises);
+
+        new Notification({
+          title: "File Exported",
+          body: `${filename} has been saved in \n${dirname}`,
+        }).show();
+      }
+    }
+  });
+
   return Menu.buildFromTemplate([
     {
       label: "View",
@@ -54,23 +108,13 @@ export function createMenu() {
           },
         },
         {
-          label: "Export GlB",
+          label: "Export GlB/GlTF",
           accelerator: "CmdOrCtrl+E",
           async click() {
             if (contextDocument) {
-              const result = await dialog.showSaveDialog(
-                BrowserWindow.getFocusedWindow(),
-                {
-                  title: "Download to File…",
-                  filters: [{ name: "All Files", extensions: [".glb"] }],
-                }
-              );
-              if (!result.canceled) {
-                const filepath = result.filePath!;
-                const io = await getIO();
-                const buffer = await io.writeBinary(contextDocument);
-                await fs.writeFile(filepath, buffer);
-              }
+              const allWindows = BrowserWindow.getAllWindows();
+              const win = allWindows[0];
+              win.webContents.send("export-glb");
             } else {
               dialog.showMessageBox(BrowserWindow.getFocusedWindow(), {
                 message: "Open a gltf/glb First",

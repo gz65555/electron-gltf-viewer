@@ -41,7 +41,7 @@ export const ExportModal = observer(function () {
           labelCol={{ span: 6 }}
           labelAlign="left"
           onFinish={(values) => {
-            console.log(values);
+            exportStore.export(values);
           }}
           initialValues={{
             type: "glTF",
@@ -53,7 +53,10 @@ export const ExportModal = observer(function () {
           <Form.Item label="Type" name="type">
             <Select
               style={{ width: 200 }}
-              options={[{ label: "glTF" }, { label: "glb" }]}
+              options={[
+                { label: "glTF", value: "glTF" },
+                { label: "glb", value: "glb" },
+              ]}
             />
           </Form.Item>
           <Form.Item label="KTX2" valuePropName="checked" name={"ktx2"}>

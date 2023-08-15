@@ -17,6 +17,7 @@ import fs from "fs-extra";
 import { preferences } from "../preference/preference";
 
 export let contextDocument: Document | undefined = undefined;
+export let contextFilename = "";
 
 const CONVERTED_GLB_PATH = path.join(process.cwd(), "temp/temp.glb");
 
@@ -54,6 +55,7 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
       }
       const io = await getIO();
       const doc = await io.read(modelPath);
+      contextFilename = path.basename(modelPath, path.extname(modelPath))
       contextDocument = doc;
 
       const computeTangentsOption = preferences.value("assets.computeTangents");
