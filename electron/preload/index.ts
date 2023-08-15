@@ -92,7 +92,6 @@ window.onmessage = (ev) => {
 };
 
 ipcRenderer.on("appendLoading", () => {
-  console.log("hello");
   appendLoading();
 });
 

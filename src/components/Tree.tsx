@@ -113,7 +113,6 @@ export const Tree = observer(function () {
         <TreeView
           selected={rootStore.selectedEntityId}
           onNodeSelect={(e, nodeId: string) => {
-            console.log("selected", nodeId);
             rootStore.select(nodeId);
           }}
           style={{ color: "white", overflowX: "hidden" }}

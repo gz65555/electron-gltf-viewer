@@ -179,7 +179,6 @@ function addTextureInput(
       material.shaderData.setTexture(uniformProperty, texture);
     },
     onPreview(ctx: CanvasRenderingContext2D) {
-      console.log("preview");
       rootStore.imagePreviewStore.show(ctx);
     },
   });

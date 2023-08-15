@@ -18,7 +18,6 @@ export class ControlPointer {
     const { pointers } = input;
     switch (pointers.length) {
       case 1:
-        console.log(pointers[0])
         if (input.isPointerHeldDown(PointerButton.Secondary)) {
           this._updateType(ControlHandlerType.PAN, DeltaType.Moving);
         } else if (input.isPointerHeldDown(PointerButton.Auxiliary)) {

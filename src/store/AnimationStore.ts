@@ -42,7 +42,6 @@ export class AnimationStore {
     this.selectedIndex = index;
     this.selectedClip = this._animationClips[index];
     this.frameTime = 0;
-    console.log(this);
     this.duration = Math.ceil(this.selectedClip.length);
     //@ts-ignore
     // TODO: linked issue: https://github.com/oasis-engine/engine/issues/1134
