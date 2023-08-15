@@ -1,7 +1,5 @@
 import { NodeIO, Document, Transform } from "@gltf-transform/core";
 import {
-  dedup,
-  center,
   weld,
   unweld,
   tangents,
@@ -68,8 +66,6 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
           weld()
         );
       }
-
-      transformPipeline.push(dedup(), center({ pivot: "center" }));
 
       await doc.transform(...transformPipeline);
 

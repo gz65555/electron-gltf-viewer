@@ -44,22 +44,22 @@ class Oasis extends EventEmitter {
   textures: Record<string, Texture2D> = {};
   env: Record<string, AmbientLight> = {};
 
-  engine: WebGLEngine = new WebGLEngine("canvas-gltf-viewer", { alpha: true });
-  scene: Scene = this.engine.sceneManager.activeScene;
-  skyMaterial: SkyBoxMaterial = new SkyBoxMaterial(this.engine);
+  engine: WebGLEngine;
+  scene: Scene;
+  skyMaterial: SkyBoxMaterial;
 
   // Entity
-  rootEntity: Entity = this.scene.createRootEntity("root");
-  cameraEntity: Entity = this.rootEntity.createChild("scene-camera");
-  gltfRootEntity: Entity = this.rootEntity.createChild("gltf");
-  lightEntity1: Entity = this.rootEntity.createChild("light1");
-  lightEntity2: Entity = this.rootEntity.createChild("light2");
+  rootEntity: Entity;
+  cameraEntity: Entity;
+  gltfRootEntity: Entity;
+  lightEntity1: Entity;
+  lightEntity2: Entity;
 
   // Component
-  camera: Camera = this.cameraEntity.addComponent(Camera);
-  controller: OrbitControl = this.cameraEntity.addComponent(OrbitControl);
-  light1: DirectLight = this.lightEntity1.addComponent(DirectLight);
-  light2: DirectLight = this.lightEntity2.addComponent(DirectLight);
+  camera: Camera;
+  controller: OrbitControl;
+  light1: DirectLight;
+  light2: DirectLight;
 
   _materials: Material[] = [];
 
@@ -78,13 +78,29 @@ class Oasis extends EventEmitter {
   constructor() {
     super();
 
-    this.loadEnv("pisa").then(() => {
-      this.initScene();
-      this.initDropZone();
-      this.initDefaultDebugMesh();
-      this.emit("ready");
-    });
+    this.init()
+      .then(() => this.loadEnv("pisa"))
+      .then(() => {
+        this.initScene();
+        this.initDropZone();
+        this.initDefaultDebugMesh();
+        this.emit("ready");
+      });
+  }
 
+  async init() {
+    this.engine = await WebGLEngine.create({ canvas: "canvas-gltf-viewer" });
+    this.scene = this.engine.sceneManager.activeScene;
+    this.skyMaterial = new SkyBoxMaterial(this.engine);
+    this.rootEntity = this.scene.createRootEntity("root");
+    this.cameraEntity = this.rootEntity.createChild("scene-camera");
+    this.gltfRootEntity = this.rootEntity.createChild("gltf");
+    this.lightEntity1 = this.rootEntity.createChild("light1");
+    this.lightEntity2 = this.rootEntity.createChild("light2");
+    this.camera = this.cameraEntity.addComponent(Camera);
+    this.controller = this.cameraEntity.addComponent(OrbitControl);
+    this.light1 = this.lightEntity1.addComponent(DirectLight);
+    this.light2 = this.lightEntity2.addComponent(DirectLight);
     this.controller.addDefaultControl();
   }
 
@@ -123,7 +139,7 @@ class Oasis extends EventEmitter {
           const urlNew = URL.createObjectURL(blob);
           this.engine.resourceManager
             .load<GLTFResource>({
-              type: AssetType.Prefab,
+              type: AssetType.GLTF,
               url: `${urlNew}#.gltf`,
             })
             .then((asset) => {
@@ -136,7 +152,7 @@ class Oasis extends EventEmitter {
     } else {
       this.engine.resourceManager
         .load<GLTFResource>({
-          type: AssetType.Prefab,
+          type: AssetType.GLTF,
           url: `${url}#.glb`,
           params: {
             keepMeshData: true,

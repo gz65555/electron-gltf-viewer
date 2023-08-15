@@ -70,92 +70,92 @@ function changeFolderVisibility(
 }
 
 const uniformMap = {
-  u_baseTexture: {
+  material_BaseTexture: {
     label: "baseTex",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.Base,
   },
-  u_baseColor: {
+  material_BaseColor: {
     label: "baseColor",
     defaultValue: new Color(),
     color: { type: "float", alpha: true },
     view: "text",
     folder: MaterialPropertyGroup.Base,
   },
-  u_tilingOffset: {
+  material_TilingOffset: {
     label: "tilingOffset",
     defaultValue: new Vector4(1, 1, 0, 0),
     folder: MaterialPropertyGroup.Common,
   },
-  u_normalTexture: {
+  material_NormalTexture: {
     label: "texture",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.Normal,
   },
-  u_normalIntensity: {
+  material_NormalTextureIntensity: {
     label: "intensity",
     defaultValue: 1,
     folder: MaterialPropertyGroup.Normal,
   },
-  u_emissiveTexture: {
+  material_EmissiveTexture: {
     label: "texture",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.Emissive,
   },
-  u_emissiveColor: {
+  material_EmissiveColor: {
     label: "color",
     defaultValue: new Color(),
     folder: MaterialPropertyGroup.Emissive,
   },
-  u_occlusionTexture: {
+  material_OcclusionTexture: {
     label: "texture",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.Occlusion,
   },
-  u_occlusionIntensity: {
+  material_OcclusionIntensity: {
     label: "intensity",
     defaultValue: 0,
     min: 0,
     max: 1,
     folder: MaterialPropertyGroup.Occlusion,
   },
-  u_occlusionTextureCoord: {
+  material_OcclusionTextureCoord: {
     label: "textureCoord",
     folder: MaterialPropertyGroup.Occlusion,
     defaultValue: new Vector2(),
   },
-  u_clearCoatTexture: {
+  material_ClearCoatTexture: {
     label: "texture",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.Clearcoat,
   },
-  u_clearCoat: {
+  material_ClearCoat: {
     label: "clearCoat",
     defaultValue: 0,
     min: 0,
     max: 1,
     folder: MaterialPropertyGroup.Clearcoat,
   },
-  u_clearCoatRoughness: {
+  material_ClearCoatRoughness: {
     label: "roughness",
     defaultValue: 0,
     min: 0,
     max: 1,
     folder: MaterialPropertyGroup.Clearcoat,
   },
-  u_roughnessMetallicTexture: {
+  material_RoughnessMetallicTexture: {
     label: "texture",
     view: "input-texture2d",
     folder: MaterialPropertyGroup.MetalRoughness,
   },
-  u_metal: {
+  material_Metal: {
     label: "metallic",
     defaultValue: 0,
     min: 0,
     max: 1,
     folder: MaterialPropertyGroup.MetalRoughness,
   },
-  u_roughness: {
+  material_Roughness: {
     label: "roughness",
     defaultValue: 0,
     min: 0,
@@ -192,16 +192,16 @@ function setMaterialShader(
 ) {
   material.shader = Shader.find(value);
   const shaderData = material.shaderData;
-  shaderData.disableMacro("O3_NEED_WORLDPOS");
-  shaderData.disableMacro("OMIT_NORMAL");
-  shaderData.disableMacro("O3_NEED_TILINGOFFSET");
+  shaderData.disableMacro("MATERIAL_OMIT_NORMAL");
+  shaderData.disableMacro("MATERIAL_NEED_TILING_OFFSET");
+  shaderData.disableMacro("MATERIAL_NEED_WORLD_POS");
 
   if (value === "unlit") {
-    shaderData.enableMacro("OMIT_NORMAL");
-    shaderData.enableMacro("O3_NEED_TILINGOFFSET");
+    shaderData.enableMacro("MATERIAL_OMIT_NORMAL");
+    shaderData.enableMacro("MATERIAL_NEED_TILING_OFFSET");
   } else {
-    shaderData.enableMacro("O3_NEED_WORLDPOS");
-    shaderData.enableMacro("O3_NEED_TILINGOFFSET");
+    shaderData.enableMacro("MATERIAL_NEED_WORLD_POS");
+    shaderData.enableMacro("MATERIAL_NEED_TILING_OFFSET");
   }
 
   changeFolderVisibility(material.shader.name, folders);
@@ -216,11 +216,11 @@ function setMaterialValue(
 }
 
 const onChangeMap = {
-  u_metal: setMaterialValue,
-  u_roughness: setMaterialValue,
-  u_clearCoat: setMaterialValue,
-  u_clearCoatRoughness: setMaterialValue,
-  u_occlusionIntensity: setMaterialValue,
+  material_Metal: setMaterialValue,
+  material_Roughness: setMaterialValue,
+  material_ClearCoat: setMaterialValue,
+  material_ClearCoatRoughness: setMaterialValue,
+  material_OcclusionIntensity: setMaterialValue,
   shader: setMaterialShader,
 };
 
