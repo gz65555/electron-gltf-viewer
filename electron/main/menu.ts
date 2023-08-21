@@ -50,10 +50,10 @@ export function createMenu() {
         }
         promises.push(fs.writeFile(filepath, JSON.stringify(json)));
         await Promise.all(promises);
-
         new Notification({
           title: "File Exported",
           body: `${filename} has been saved in \n${dirname}`,
+          icon: path.join(process.env.PUBLIC, "icon.png"),
         }).show();
       }
     }

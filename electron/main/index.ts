@@ -16,7 +16,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
-process.env.DIST = path.join(__dirname, "../..");
+process.env.DIST = path.join(__dirname, "../");
 process.env.PUBLIC = app.isPackaged
   ? process.env.DIST
   : path.join(process.env.DIST, "../public");

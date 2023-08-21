@@ -253,7 +253,7 @@ class Oasis extends EventEmitter {
   }
 
   private loadFileMaps(files: Map<string, File>) {
-    const modelReg = /\.(gltf|glb)$/i;
+    const modelReg = /\.(gltf|glb|fbx)$/i;
 
     let mainFile: File;
     let type = "gltf";
@@ -263,7 +263,7 @@ class Oasis extends EventEmitter {
 
     fileArray.some((f) => {
       const file = f[1];
-      if (modelReg.test(file.name)) {
+      if (modelReg.test(file.name.toLowerCase())) {
         type = RegExp.$1;
         mainFile = file;
         return true;
