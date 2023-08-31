@@ -14,8 +14,7 @@ import { JSONViewerModal } from "./components/JSONViewerModal";
 import { ExportModal } from "./components/ExportModal";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <div>
-    {/* <App /> */}
+  <div style={{ position: "fixed", left: 0, top: 0 }}>
     <RootContext.Provider value={rootStore}>
       <GlTFView />
       <UIContainer />

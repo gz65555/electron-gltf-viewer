@@ -1,8 +1,15 @@
-import { jsonViewerStore } from "@/store/JSONViewerStore";
 import { observer } from "mobx-react-lite";
-import ReactJson from "react-json-view";
-import { Modal, ConfigProvider, theme, Select, Form, Checkbox } from "antd";
+import {
+  Modal,
+  ConfigProvider,
+  theme,
+  Select,
+  Form,
+  Checkbox,
+  Button,
+} from "antd";
 import { exportStore } from "@/store/ExportStore";
+import { rootStore } from "@/store/RootStore";
 
 export const ExportModal = observer(function () {
   const [form] = Form.useForm();
@@ -28,12 +35,22 @@ export const ExportModal = observer(function () {
         title={"Export Options"}
         open={exportStore.isModalOpen}
         centered={true}
-        okText="Export"
         bodyStyle={{ padding: "20px 0px" }}
-        onOk={() => {
-          form.submit();
-        }}
-        onCancel={handleClose}
+        footer={[
+          <Button key="cancel" onClick={handleClose}>
+            Cancel
+          </Button>,
+          <Button
+            key="Export"
+            type="primary"
+            loading={rootStore.isLoading}
+            onClick={() => {
+              form.submit();
+            }}
+          >
+            Export
+          </Button>,
+        ]}
       >
         <Form
           size="small"
@@ -62,9 +79,9 @@ export const ExportModal = observer(function () {
           <Form.Item label="KTX2" valuePropName="checked" name={"ktx2"}>
             <Checkbox />
           </Form.Item>
-          <Form.Item label="MeshOpt" valuePropName="checked" name="meshopt">
+          {/* <Form.Item label="MeshOpt" valuePropName="checked" name="meshopt">
             <Checkbox />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
             label="MeshQuantize"
             valuePropName="checked"

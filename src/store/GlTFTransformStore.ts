@@ -1,10 +1,12 @@
 import { makeObservable } from "mobx";
 import { WebIO, Document } from "@gltf-transform/core";
-import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { Vector4 } from "@galacean/engine";
+import { ExportOptions } from "./ExportStore";
+import { encodeKTX2 } from "./ktx2/encodeKTX2";
 
 const io = new WebIO();
-io.registerExtensions(KHRONOS_EXTENSIONS);
+io.registerExtensions(ALL_EXTENSIONS);
 
 export class GlTFTransformStore {
   public static async create(info: Uint8Array) {
@@ -21,17 +23,14 @@ export class GlTFTransformStore {
 
   public async init(info: Uint8Array) {
     this._doc = await io.readBinary(info);
-    // const meshes = this._doc.getRoot().listMeshes();
-    // for (let i = 0; i < meshes.length; i++) {
-    //   const primitives = meshes[i].listPrimitives();
-    //   primitives.forEach((primitive) => {
-    //     const attribute = primitive.getAttribute("TANGENT");
-    //     const buf = attribute.getBuffer();
-    //     const uri = buf.getURI();
-    //     console.log(uri);
-    //   });
-    // }
-    // console.log(meshes);
+  }
+
+  public async getTransformedIO(options: ExportOptions) {
+    const doc = this._doc;
+    if (options.ktx2) {
+      await doc.transform(encodeKTX2());
+    }
+    return io.writeBinary(doc);
   }
 
   public async generateJSON() {

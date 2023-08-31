@@ -49,6 +49,9 @@ export class RootStore {
   @observable
   searchText = "";
 
+  @observable
+  isLoading = false;
+
   entityStore = new EntityStore();
 
   engine: WebGLEngine;
@@ -197,6 +200,15 @@ export class RootStore {
   @action
   toggleFullScreen() {
     this.isFullScreen = !this.isFullScreen;
+  }
+
+  @action
+  startLoading() {
+    this.isLoading = true;
+  }
+  @action
+  stopLoading() {
+    this.isLoading = false;
   }
 
   @action

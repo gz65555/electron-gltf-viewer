@@ -1,5 +1,13 @@
 import { action, makeObservable, observable } from "mobx";
+import { rootStore } from "./RootStore";
 const { ipcRenderer } = window.require("electron");
+
+export interface ExportOptions {
+  ktx2: boolean;
+  meshopt: boolean;
+  meshQuantize: boolean;
+  type: "glTF" | "glb";
+}
 
 class ExportStore {
   @observable
@@ -12,8 +20,11 @@ class ExportStore {
     });
   }
 
-  export(options) {
-    ipcRenderer.send("export-glb", options);
+  async export(options: ExportOptions) {
+    rootStore.startLoading();
+    const buffer = await rootStore.gltfTransformStore.getTransformedIO(options);
+    rootStore.stopLoading();
+    ipcRenderer.send("export-glb", options, buffer);
     this.isModalOpen = false;
   }
 

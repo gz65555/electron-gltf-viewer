@@ -12,7 +12,8 @@ import path from "path";
 import { Notification } from "electron";
 
 export function createMenu() {
-  ipcMain.on("export-glb", async (e, params) => {
+  ipcMain.on("export-glb", async (e, params, buffer) => {
+    const doc = await getIO().then((io) => io.readBinary(buffer));
     const isGlTF = params.type === "glTF";
     const result = await dialog.showSaveDialog(
       BrowserWindow.getFocusedWindow(),
@@ -30,10 +31,10 @@ export function createMenu() {
       const filename = path.basename(filepath);
       const io = await getIO();
       if (!isGlTF) {
-        const buffer = await io.writeBinary(contextDocument);
+        const buffer = await io.writeBinary(doc);
         await fs.writeFile(filepath, buffer);
       } else {
-        const data = await io.writeJSON(contextDocument);
+        const data = await io.writeJSON(doc);
         const { json, resources } = data;
         const promises = [];
         for (let uri in resources) {

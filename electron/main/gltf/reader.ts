@@ -4,7 +4,7 @@ import {
   unweld,
   tangents,
 } from "@gltf-transform/functions";
-import { KHRONOS_EXTENSIONS } from "@gltf-transform/extensions";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { generateTangents } from "mikktspace";
 import path from "path";
 import fetch from "node-fetch";
@@ -34,7 +34,7 @@ export async function getIO() {
   if (!_io) {
     _io = new NodeIO(fetch)
       .setAllowHTTP(true)
-      .registerExtensions(KHRONOS_EXTENSIONS)
+      .registerExtensions(ALL_EXTENSIONS)
       .registerDependencies({
         "draco3d.decoder": await draco3d.createDecoderModule(),
         "draco3d.encoder": await draco3d.createEncoderModule(),

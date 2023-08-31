@@ -2,7 +2,7 @@ import { styled } from "../theme/stitches.config";
 
 const StyledSidebar = styled("div", {
   width: 230,
-  position: "absolute",
+  position: "fixed",
   bottom: "$space$3",
   top: "$space$3",
   userSelect: "none",

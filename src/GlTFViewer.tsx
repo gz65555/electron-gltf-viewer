@@ -249,6 +249,7 @@ class Oasis extends EventEmitter {
 
   private initDropZone() {
     const dropCtrl = new SimpleDropzone(document.body, this.$input);
+
     dropCtrl.on("drop", ({ files }) => this.loadFileMaps(files));
   }
 
