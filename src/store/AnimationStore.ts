@@ -70,7 +70,7 @@ export class AnimationStore {
   @action
   onUpdate(deltaTime: number) {
     if (!this.isPlaying || !this.selectedClip || !this.duration) return;
-    this.frameTime += deltaTime / 1000;
+    this.frameTime += deltaTime;
     if (this.frameTime > this.duration) {
       this.frameTime %= this.duration;
     }

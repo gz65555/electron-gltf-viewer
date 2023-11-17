@@ -7,8 +7,10 @@ import {
   Entity,
   GLTFResource,
   Material,
+  PrimitiveMesh,
   Renderer,
   Scene,
+  SkyBoxMaterial,
   TextureCube,
   Vector3,
   WebGLEngine,
@@ -23,6 +25,7 @@ import { GlTFTransformStore } from "./GlTFTransformStore";
 
 const hdrList = [
   { url: "/hdr/puresky.hdr", type: AssetType.HDR, label: "PureSky" },
+  { url: "/hdr/courtyard.hdr", type: AssetType.HDR, label: "CourtYard" },
 ];
 
 export class RootStore {
@@ -79,6 +82,7 @@ export class RootStore {
   gltfTransformStore: GlTFTransformStore;
   animationStore = new AnimationStore();
   imagePreviewStore = new ImagePreviewStore();
+  @observable
   hdrSelection: Array<{ label: string; value: string; rawValue: TextureCube }> =
     [];
 
@@ -151,6 +155,16 @@ export class RootStore {
     this.glTFId = asset.instanceId;
     this.glTFRoot = rootEntity;
     this.engine = rootEntity.engine as WebGLEngine;
+    const scene = this.engine.sceneManager.activeScene;
+    const skyMaterial = new SkyBoxMaterial(this.engine);
+    skyMaterial.textureDecodeRGBM = true;
+    scene.background.sky.material = skyMaterial;
+    scene.background.sky.mesh = PrimitiveMesh.createCuboid(
+      this.engine,
+      1,
+      1,
+      1
+    );
     this.sceneCamera = this.engine.sceneManager.activeScene
       .findEntityByName("scene-camera")
       .getComponent(Camera);
@@ -194,8 +208,11 @@ export class RootStore {
             rawValue: hdr,
           };
         });
+        skyMaterial.texture = hdrs[0];
       });
   }
+
+  changeHDR(hdrLabel: string) {}
 
   @action
   toggleFullScreen() {

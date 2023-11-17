@@ -35,6 +35,7 @@ export const ExportModal = observer(function () {
         title={"Export Options"}
         open={exportStore.isModalOpen}
         centered={true}
+        onCancel={handleClose}
         bodyStyle={{ padding: "20px 0px" }}
         footer={[
           <Button key="cancel" onClick={handleClose}>

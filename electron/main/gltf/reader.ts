@@ -1,9 +1,5 @@
 import { NodeIO, Document, Transform } from "@gltf-transform/core";
-import {
-  weld,
-  unweld,
-  tangents,
-} from "@gltf-transform/functions";
+import { weld, unweld, tangents } from "@gltf-transform/functions";
 import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { generateTangents } from "mikktspace";
 import path from "path";
@@ -53,7 +49,7 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
       }
       const io = await getIO();
       const doc = await io.read(modelPath);
-      contextFilename = path.basename(modelPath, path.extname(modelPath))
+      contextFilename = path.basename(modelPath, path.extname(modelPath));
       contextDocument = doc;
 
       const computeTangentsOption = preferences.value("assets.computeTangents");
@@ -66,6 +62,12 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
           weld()
         );
       }
+
+      doc
+        .getRoot()
+        .listExtensionsUsed()
+        .find((ext) => ext.extensionName === "KHR_draco_mesh_compression")
+        ?.dispose();
 
       await doc.transform(...transformPipeline);
 

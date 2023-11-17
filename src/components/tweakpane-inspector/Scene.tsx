@@ -1,11 +1,16 @@
 import { jsonViewerStore } from "@/store/JSONViewerStore";
 import { rootStore } from "@/store/RootStore";
 import * as oasisEngine from "@galacean/engine";
-import { BackgroundMode, Color, BackgroundTextureFillMode } from "@galacean/engine";
+import {
+  BackgroundMode,
+  Color,
+  BackgroundTextureFillMode,
+} from "@galacean/engine";
 import { useEffect } from "react";
 import { ListApi, Pane } from "tweakpane";
 import { JSONViewerModal } from "../JSONViewerModal";
 import * as TexturePlugin from "./texture2d";
+import { toJS } from "mobx";
 
 export function SceneInspector(props: { scene: oasisEngine.Scene }) {
   const { scene } = props;
@@ -40,27 +45,28 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
       }
     );
 
-    const options = rootStore.hdrSelection.map((v) => ({
-      label: v.label,
-      value: v.value,
-    }));
+    const options = toJS(
+      rootStore.hdrSelection.map((v) => ({
+        text: v.label,
+        value: v.value,
+      }))
+    );
 
-    // TODO: HDR list
+    const hdrListApi = backgroundFolder.addBlade({
+      view: "list",
+      label: "scene",
+      options: options,
+      value: options[0].value,
+    }) as ListApi<any>;
 
-    // const hdrListApi = backgroundFolder.addBlade({
-    //   view: "list",
-    //   label: "scene",
-    //   options: [
-    //     { text: "loading", value: "LDG" },
-    //     { text: "menu", value: "MNU" },
-    //     { text: "field", value: "FLD" },
-    //   ],
-    //   value: "LDG",
-    // }) as ListApi<any>;
-
-    // hdrListApi.on("change", (e) => {
-    //   const hdr = rootStore.hdrSelection[e.value];
-    // });
+    hdrListApi.on("change", (e) => {
+      rootStore.changeHDR(e.value);
+      const item = rootStore.hdrSelection.find(
+        (item) => item.value === e.value
+      );
+      (scene.background.sky.material as oasisEngine.SkyBoxMaterial).texture =
+        item.rawValue;
+    });
 
     const backgroundTextureInput = backgroundFolder.addBlade({
       view: "texture2d",
@@ -117,9 +123,5 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
     };
   }, []);
 
-  return (
-    <>
-      {/* <JSONViewerModal/> */}
-    </>
-  );
+  return <>{/* <JSONViewerModal/> */}</>;
 }
