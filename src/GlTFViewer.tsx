@@ -8,6 +8,7 @@ import {
   BoundingBox,
   Camera,
   DirectLight,
+  Engine,
   Entity,
   GLTFResource,
   Material,
@@ -30,15 +31,6 @@ import { IGlTF } from "./types/IGlTF";
 import { OrbitControl } from "./controls";
 
 const { ipcRenderer } = window.require("electron");
-
-const envList = {
-  sunset:
-    "https://gw.alipayobjects.com/os/bmw-prod/89c54544-1184-45a1-b0f5-c0b17e5c3e68.bin",
-  pisa: "https://gw.alipayobjects.com/os/bmw-prod/6470ea5e-094b-4a77-a05f-4945bf81e318.bin",
-  park: "https://gw.alipayobjects.com/os/bmw-prod/37f204c2-bc5b-4344-a368-8251bbeb0717.bin",
-  foot_2K:
-    "https://gw.alipayobjects.com/os/bmw-prod/23c1893a-fe29-4e91-bd6a-bb1c4201a876.bin",
-};
 
 class Oasis extends EventEmitter {
   textures: Record<string, Texture2D> = {};
@@ -75,11 +67,11 @@ class Oasis extends EventEmitter {
 
   glTFData: any;
 
-  constructor() {
+  constructor(storeInit: (engine: Engine) => Promise<any>) {
     super();
 
     this.init()
-      .then(() => this.loadEnv("pisa"))
+      .then(() => storeInit(this.engine))
       .then(() => {
         this.initScene();
         this.initDropZone();
@@ -167,27 +159,6 @@ class Oasis extends EventEmitter {
     }
   }
 
-  private loadEnv(envName: keyof typeof envList) {
-    return new Promise((resolve) => {
-      this.engine.resourceManager
-        .load<AmbientLight>({
-          type: AssetType.Env,
-          url: envList[envName],
-        })
-        .then((env) => {
-          this.env[envName] = env;
-
-          this.scene.ambientLight = env;
-          // this.skyMaterial.textureCubeMap = env.specularTexture;
-          // this.skyMaterial.textureDecodeRGBM = true;
-          resolve(true);
-        })
-        .catch((e) => {
-          console.log(e);
-        });
-    });
-  }
-
   private initScene() {
     this.engine.canvas.resizeByClientSize();
     this.controller.minDistance = 0;
@@ -259,7 +230,6 @@ class Oasis extends EventEmitter {
     let mainFile: File;
     let type = "gltf";
 
-    const filesMap = {}; // [fileName]:LocalUrl
     const fileArray: any = Array.from(files); // ['/*/*.*',obj:File]
 
     fileArray.some((f) => {
@@ -279,7 +249,7 @@ class Oasis extends EventEmitter {
 
   /** 加载完毕 */
   private handleGlTFResource(asset: GLTFResource, buffer: Uint8Array) {
-    const { defaultSceneRoot, materials, animations } = asset;
+    const { defaultSceneRoot } = asset;
     this.dropSuccess();
     this.gltfRootEntity = defaultSceneRoot;
     this.rootEntity.addChild(defaultSceneRoot);
@@ -318,7 +288,9 @@ export function GlTFView() {
   const rootStore = useRootStore();
   useEffect(() => {
     if (!oasis) {
-      oasis = new Oasis();
+      oasis = new Oasis(async (engine) => {
+        rootStore.initHDR(engine);
+      });
 
       function openFile(arg: Uint8Array) {
         const blob = URL.createObjectURL(new Blob([arg.buffer]));
@@ -343,8 +315,8 @@ export function GlTFView() {
       ipcRenderer.send("init-file-fetch");
 
       /** glTF loaded */
-      oasis.on("loaded", (asset: GLTFResource, buffer) => {
-        rootStore.initGlTF(asset, buffer);
+      oasis.on("loaded", async (asset: GLTFResource, buffer) => {
+        await rootStore.initGlTF(asset, buffer);
         postMessage({ payload: "removeLoading" }, "*");
       });
     }

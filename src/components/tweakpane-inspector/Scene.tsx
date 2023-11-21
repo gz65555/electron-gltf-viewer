@@ -1,18 +1,17 @@
 import { jsonViewerStore } from "@/store/JSONViewerStore";
 import { rootStore } from "@/store/RootStore";
-import * as oasisEngine from "@galacean/engine";
 import {
+  Scene,
   BackgroundMode,
   Color,
   BackgroundTextureFillMode,
 } from "@galacean/engine";
 import { useEffect } from "react";
 import { ListApi, Pane } from "tweakpane";
-import { JSONViewerModal } from "../JSONViewerModal";
 import * as TexturePlugin from "./texture2d";
 import { toJS } from "mobx";
 
-export function SceneInspector(props: { scene: oasisEngine.Scene }) {
+export function SceneInspector(props: { scene: Scene }) {
   const { scene } = props;
 
   useEffect(() => {
@@ -61,11 +60,6 @@ export function SceneInspector(props: { scene: oasisEngine.Scene }) {
 
     hdrListApi.on("change", (e) => {
       rootStore.changeHDR(e.value);
-      const item = rootStore.hdrSelection.find(
-        (item) => item.value === e.value
-      );
-      (scene.background.sky.material as oasisEngine.SkyBoxMaterial).texture =
-        item.rawValue;
     });
 
     const backgroundTextureInput = backgroundFolder.addBlade({

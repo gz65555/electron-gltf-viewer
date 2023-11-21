@@ -2,8 +2,10 @@ import { TreeDataNode } from "antd";
 import { action, computed, makeObservable, observable } from "mobx";
 import {
   AssetType,
+  BackgroundMode,
   BoundingBox,
   Camera,
+  Engine,
   Entity,
   GLTFResource,
   Material,
@@ -11,6 +13,7 @@ import {
   Renderer,
   Scene,
   SkyBoxMaterial,
+  SphericalHarmonics3,
   TextureCube,
   Vector3,
   WebGLEngine,
@@ -22,11 +25,19 @@ import { InspectorType } from "./enum";
 import { AnimationStore } from "./AnimationStore";
 import { ImagePreviewStore } from "./ImagePreviewStore";
 import { GlTFTransformStore } from "./GlTFTransformStore";
+import {
+  IBLBaker,
+  BakerResolution,
+  DecodeMode,
+  SphericalHarmonics3Baker,
+} from "@galacean/tools-baker";
 
 const hdrList = [
   { url: "/hdr/puresky.hdr", type: AssetType.HDR, label: "PureSky" },
   { url: "/hdr/courtyard.hdr", type: AssetType.HDR, label: "CourtYard" },
 ];
+
+const sh = new SphericalHarmonics3();
 
 export class RootStore {
   @observable
@@ -58,6 +69,8 @@ export class RootStore {
   entityStore = new EntityStore();
 
   engine: WebGLEngine;
+
+  scene: Scene;
 
   sceneCamera: Camera;
 
@@ -156,15 +169,7 @@ export class RootStore {
     this.glTFRoot = rootEntity;
     this.engine = rootEntity.engine as WebGLEngine;
     const scene = this.engine.sceneManager.activeScene;
-    const skyMaterial = new SkyBoxMaterial(this.engine);
-    skyMaterial.textureDecodeRGBM = true;
-    scene.background.sky.material = skyMaterial;
-    scene.background.sky.mesh = PrimitiveMesh.createCuboid(
-      this.engine,
-      1,
-      1,
-      1
-    );
+    this.scene = scene;
     this.sceneCamera = this.engine.sceneManager.activeScene
       .findEntityByName("scene-camera")
       .getComponent(Camera);
@@ -198,7 +203,10 @@ export class RootStore {
     this.gltfSize = calculateSize(asset.defaultSceneRoot);
 
     this.gltfTransformStore = await GlTFTransformStore.create(bytes);
-    await this.engine.resourceManager
+  }
+
+  async initHDR(engine: Engine) {
+    await engine.resourceManager
       .load<TextureCube[]>(hdrList as any)
       .then((hdrs) => {
         hdrs.forEach((hdr, index) => {
@@ -208,11 +216,31 @@ export class RootStore {
             rawValue: hdr,
           };
         });
-        skyMaterial.texture = hdrs[0];
+        const scene = engine.sceneManager.activeScene;
+        this.scene = scene;
+        const skyMaterial = new SkyBoxMaterial(engine);
+        skyMaterial.textureDecodeRGBM = true;
+        scene.background.sky.material = skyMaterial;
+        scene.background.sky.mesh = PrimitiveMesh.createCuboid(engine, 1, 1, 1);
+        scene.background.mode = BackgroundMode.Sky;
+        this.changeHDR("PureSky");
       });
   }
 
-  changeHDR(hdrLabel: string) {}
+  changeHDR(hdrLabel: string) {
+    const scene = this.scene;
+    const item = rootStore.hdrSelection.find((item) => item.value === hdrLabel);
+    console.log(item);
+    const bakedTexture = IBLBaker.fromTextureCubeMap(
+      item.rawValue,
+      BakerResolution.R128,
+      DecodeMode.RGBM
+    );
+    SphericalHarmonics3Baker.fromTextureCubeMap(item.rawValue, sh);
+    (scene.background.sky.material as SkyBoxMaterial).texture = item.rawValue;
+    scene.ambientLight.diffuseSphericalHarmonics = sh;
+    scene.ambientLight.specularTexture = bakedTexture;
+  }
 
   @action
   toggleFullScreen() {
