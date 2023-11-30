@@ -14,6 +14,13 @@ import { toJS } from "mobx";
 export function SceneInspector(props: { scene: Scene }) {
   const { scene } = props;
 
+  const options = toJS(
+    rootStore.hdrSelection.map((v) => ({
+      text: v.label,
+      value: v.value,
+    }))
+  );
+
   useEffect(() => {
     const pane = new Pane();
     pane.title = "Scene";
@@ -42,13 +49,6 @@ export function SceneInspector(props: { scene: Scene }) {
         color: { type: "float", alpha: true },
         view: "text",
       }
-    );
-
-    const options = toJS(
-      rootStore.hdrSelection.map((v) => ({
-        text: v.label,
-        value: v.value,
-      }))
     );
 
     const hdrListApi = backgroundFolder.addBlade({

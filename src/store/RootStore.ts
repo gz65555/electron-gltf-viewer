@@ -205,7 +205,10 @@ export class RootStore {
     this.gltfTransformStore = await GlTFTransformStore.create(bytes);
   }
 
-  async initHDR(engine: Engine) {
+  async init(engine: WebGLEngine) {
+    this.engine = engine;
+    const scene = engine.sceneManager.activeScene;
+    this.scene = scene;
     await engine.resourceManager
       .load<TextureCube[]>(hdrList as any)
       .then((hdrs) => {
@@ -216,8 +219,6 @@ export class RootStore {
             rawValue: hdr,
           };
         });
-        const scene = engine.sceneManager.activeScene;
-        this.scene = scene;
         const skyMaterial = new SkyBoxMaterial(engine);
         skyMaterial.textureDecodeRGBM = true;
         scene.background.sky.material = skyMaterial;
@@ -227,10 +228,24 @@ export class RootStore {
       });
   }
 
+  async addHDR(name: string, buffer: Uint8Array) {
+    const url = URL.createObjectURL(new Blob([buffer]));
+    const textureCube = await this.engine.resourceManager.load<TextureCube>({
+      url,
+      type: AssetType.HDR,
+    });
+    URL.revokeObjectURL(url);
+    this.hdrSelection.push({
+      label: name,
+      value: name,
+      rawValue: textureCube,
+    });
+    this.changeHDR(name);
+  }
+
   changeHDR(hdrLabel: string) {
     const scene = this.scene;
     const item = rootStore.hdrSelection.find((item) => item.value === hdrLabel);
-    console.log(item);
     const bakedTexture = IBLBaker.fromTextureCubeMap(
       item.rawValue,
       BakerResolution.R128,

@@ -67,7 +67,7 @@ class Oasis extends EventEmitter {
 
   glTFData: any;
 
-  constructor(storeInit: (engine: Engine) => Promise<any>) {
+  constructor(storeInit: (engine: WebGLEngine) => Promise<any>) {
     super();
 
     this.init()
@@ -289,7 +289,7 @@ export function GlTFView() {
   useEffect(() => {
     if (!oasis) {
       oasis = new Oasis(async (engine) => {
-        rootStore.initHDR(engine);
+        rootStore.init(engine);
       });
 
       function openFile(arg: Uint8Array) {
@@ -300,6 +300,12 @@ export function GlTFView() {
       /** 进来后打开 glTF 文件 */
       ipcRenderer.on("file-opened", (event, arg: Uint8Array) => {
         openFile(arg);
+      });
+
+      ipcRenderer.on("add-hdr", (e, args) => {
+        Promise.all(
+          args.map((item) => rootStore.addHDR(item.name, item.buffer))
+        );
       });
 
       /** 直接打开 glTF/glb 文件 */

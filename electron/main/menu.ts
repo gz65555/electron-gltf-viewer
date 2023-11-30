@@ -109,6 +109,39 @@ export function createMenu() {
           },
         },
         {
+          label: "Add HDR",
+          accelerator: "CmdOrCtrl+H",
+          // this is the main bit hijack the click event
+          click() {
+            // construct the select file dialog
+            dialog
+              .showOpenDialog({
+                properties: ["openFile"],
+                filters: [{ name: "HDR", extensions: ["hdr"] }],
+              })
+              .then(async function (fileObj) {
+                // the fileObj has two props
+                if (!fileObj.canceled) {
+                  const allWindows = BrowserWindow.getAllWindows();
+                  Promise.all(
+                    fileObj.filePaths.map(async (p) => {
+                      return {
+                        buffer: await fs.readFile(p),
+                        name: path.basename(p),
+                      };
+                    })
+                  ).then((buffers) => {
+                    allWindows[0].webContents.send("add-hdr", buffers);
+                  });
+                }
+              })
+              // should always handle the error yourself, later Electron release might crash if you don't
+              .catch(function (err) {
+                console.error(err);
+              });
+          },
+        },
+        {
           label: "Export GlB/GlTF",
           accelerator: "CmdOrCtrl+E",
           async click() {
