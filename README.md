@@ -18,3 +18,11 @@ English | [简体中文](README.zh-CN.md)
 - [ ] Post-processing
 - [ ] KTX2 encoder
 - [ ] Custom shader
+
+## Build
+
+```bash
+# npm run build
+```
+
+Find the executable file in the `release/${version}/` directory.

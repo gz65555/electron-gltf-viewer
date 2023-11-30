@@ -33,8 +33,12 @@ import {
 } from "@galacean/tools-baker";
 
 const hdrList = [
-  { url: "/hdr/puresky.hdr", type: AssetType.HDR, label: "PureSky" },
-  { url: "/hdr/courtyard.hdr", type: AssetType.HDR, label: "CourtYard" },
+  {
+    url: "https://mdn.alipayobjects.com/rms/afts/file/A*0WIiQJRsAjQAAAAAAAAAAAAAARQnAQ/puresky.hdr",
+    type: AssetType.HDR,
+    label: "PureSky",
+  },
+  // { url: "/hdr/courtyard.hdr", type: AssetType.HDR, label: "CourtYard" },
 ];
 
 const sh = new SphericalHarmonics3();
