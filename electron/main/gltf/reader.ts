@@ -5,6 +5,7 @@ import { generateTangents } from "mikktspace";
 import path from "path";
 import fetch from "node-fetch";
 import draco3d from "draco3dgltf";
+import { MeshoptEncoder, MeshoptDecoder } from "meshoptimizer";
 import { BrowserWindow } from "electron";
 import convert from "fbx2gltf";
 import fs from "fs-extra";
@@ -48,6 +49,11 @@ export function readModelFile(modelPath: string): Promise<Buffer> {
         modelPath = await convertFBX2GlTF(modelPath, CONVERTED_GLB_PATH);
       }
       const io = await getIO();
+      Promise.all([MeshoptDecoder.ready, MeshoptEncoder.ready]);
+      io.registerDependencies({
+        "meshopt.decoder": MeshoptDecoder,
+        "meshopt.encoder": MeshoptEncoder,
+      });
       const doc = await io.read(modelPath);
       contextFilename = path.basename(modelPath, path.extname(modelPath));
       contextDocument = doc;
